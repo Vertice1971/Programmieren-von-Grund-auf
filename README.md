@@ -1,4 +1,4 @@
-# Programmieren-von-Grund-auf-
+# Programmieren-von-Grund-auf
 # Lerne wirklich von Grund auf programmieren – mit Künstlicher Intelligenz
 
 **Autor:** Thomas Hills
