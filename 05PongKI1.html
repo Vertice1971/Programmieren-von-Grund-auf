@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klassisches Pong</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #spielfeld {
+            background-color: #000;
+            border: 2px solid #fff;
+        }
+
+        #punktestand {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 32px;
+        }
+
+        #anleitung {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="punktestand">0 - 0</div>
+    <canvas id="spielfeld" width="800" height="500"></canvas>
+    <div id="anleitung">Benutze die Tasten W (oben) und S (unten), um deinen Schläger zu bewegen</div>
+
+    <script>
+        // Spieleinstellungen
+        const canvas = document.getElementById('spielfeld');
+        const ctx = canvas.getContext('2d');
+        const punkteAnzeige = document.getElementById('punktestand');
+
+        // Abmessungen und Eigenschaften der Spielelemente
+        const SCHLAEGER_BREITE = 15;
+        const SCHLAEGER_HOEHE = 100;
+        const BALL_GROESSE = 15;
+        const RAND_ABSTAND = 20;
+
+        // Startpositionen
+        let linksY = canvas.height / 2 - SCHLAEGER_HOEHE / 2;
+        let rechtsY = canvas.height / 2 - SCHLAEGER_HOEHE / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+
+        // Geschwindigkeiten
+        let linksSpeed = 0;
+        let rechtsSpeed = 8;
+        let ballSpeedX = 5;
+        let ballSpeedY = 5;
+
+        // Punktestand
+        let spielerPunkte = 0;
+        let kiPunkte = 0;
+
+        // Spielstatus
+        let spielAktiv = true;
+
+        // Tasteneingaben
+        document.addEventListener('keydown', function(event) {
+            if (event.key.toLowerCase() === 'w') {
+                linksSpeed = -8;
+            } else if (event.key.toLowerCase() === 's') {
+                linksSpeed = 8;
+            }
+        });
+
+        document.addEventListener('keyup', function(event) {
+            if (event.key.toLowerCase() === 'w' || event.key.toLowerCase() === 's') {
+                linksSpeed = 0;
+            }
+        });
+
+        // Ball zurücksetzen
+        function ballZuruecksetzen() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * 5;
+            ballSpeedY = (Math.random() * 4 - 2);
+        }
+
+        // Spiel aktualisieren
+        function aktualisieren() {
+            if (!spielAktiv) return;
+
+            linksY += linksSpeed;
+            if (linksY < 0) linksY = 0;
+            if (linksY > canvas.height - SCHLAEGER_HOEHE) linksY = canvas.height - SCHLAEGER_HOEHE;
+
+            let rechtsZentrum = rechtsY + SCHLAEGER_HOEHE / 2;
+            let ballZentrum = ballY + BALL_GROESSE / 2;
+
+            if (rechtsZentrum < ballZentrum - 10) {
+                rechtsY += rechtsSpeed * 0.7;
+            } else if (rechtsZentrum > ballZentrum + 10) {
+                rechtsY -= rechtsSpeed * 0.7;
+            }
+
+            if (rechtsY < 0) rechtsY = 0;
+            if (rechtsY > canvas.height - SCHLAEGER_HOEHE) rechtsY = canvas.height - SCHLAEGER_HOEHE;
+
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY < 0 || ballY > canvas.height - BALL_GROESSE) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            if (
+                ballX < RAND_ABSTAND + SCHLAEGER_BREITE &&
+                ballX > RAND_ABSTAND &&
+                ballY + BALL_GROESSE > linksY &&
+                ballY < linksY + SCHLAEGER_HOEHE
+            ) {
+                let treffpunkt = (ballY - linksY) / SCHLAEGER_HOEHE;
+                ballSpeedX = 5;
+                ballSpeedY = (treffpunkt - 0.5) * 10;
+                ballX = RAND_ABSTAND + SCHLAEGER_BREITE;
+            }
+
+            if (
+                ballX > canvas.width - RAND_ABSTAND - SCHLAEGER_BREITE - BALL_GROESSE &&
+                ballX < canvas.width - RAND_ABSTAND - SCHLAEGER_BREITE &&
+                ballY + BALL_GROESSE > rechtsY &&
+                ballY < rechtsY + SCHLAEGER_HOEHE
+            ) {
+                let treffpunkt = (ballY - rechtsY) / SCHLAEGER_HOEHE;
+                ballSpeedX = -5;
+                ballSpeedY = (treffpunkt - 0.5) * 10;
+                ballX = canvas.width - RAND_ABSTAND - SCHLAEGER_BREITE - BALL_GROESSE;
+            }
+
+            if (ballX < 0) {
+                kiPunkte++;
+                punkteAnzeige.textContent = `${spielerPunkte} - ${kiPunkte}`;
+                ballZuruecksetzen();
+            } else if (ballX > canvas.width) {
+                spielerPunkte++;
+                punkteAnzeige.textContent = `${spielerPunkte} - ${kiPunkte}`;
+                ballZuruecksetzen();
+            }
+        }
+
+        // Spiel zeichnen
+        function zeichnen() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#fff';
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(RAND_ABSTAND, linksY, SCHLAEGER_BREITE, SCHLAEGER_HOEHE);
+            ctx.fillRect(canvas.width - RAND_ABSTAND - SCHLAEGER_BREITE, rechtsY, SCHLAEGER_BREITE, SCHLAEGER_HOEHE);
+            ctx.fillRect(ballX, ballY, BALL_GROESSE, BALL_GROESSE);
+        }
+
+        // Spiel starten
+        function spielLoop() {
+            aktualisieren();
+            zeichnen();
+            requestAnimationFrame(spielLoop);
+        }
+
+        ballZuruecksetzen();
+        spielLoop();
+    </script>
+</body>
+</html>

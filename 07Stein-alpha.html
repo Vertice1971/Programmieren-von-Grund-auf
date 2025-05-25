@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schere, Stein, Papier</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .container {
+      text-align: center;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-option {
+      font-size: 1.2rem;
+      padding: 15px 25px;
+      margin: 10px;
+    }
+
+    #result {
+      margin: 20px 0;
+      font-size: 1.2rem;
+      min-height: 60px;
+    }
+
+    #score {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    #rounds {
+      padding: 8px;
+      font-size: 1rem;
+      margin: 10px;
+      width: 60px;
+      text-align: center;
+    }
+
+    .selection {
+      font-size: 1.5rem;
+      margin: 10px 0;
+    }
+
+    #final-result {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #e74c3c;
+      margin: 20px 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Bildschirm für Runden-Auswahl -->
+    <div id="setup-screen">
+      <h1>Schere, Stein, Papier</h1>
+      <p>Wähle die Anzahl der Runden:</p>
+      <input type="number" id="rounds" min="1" max="11" value="3">
+      <button id="start-btn" class="btn">Spiel beginnen</button>
+    </div>
+
+    <!-- Hauptbildschirm des Spiels -->
+    <div id="game-screen" class="hidden">
+      <h1>Schere, Stein, Papier</h1>
+      <div id="round-info">Runde 1 von <span id="total-rounds">3</span></div>
+      <div id="score">Spieler: 0 - Computer: 0</div>
+
+      <p>Wähle deinen Zug:</p>
+      <div>
+        <button id="rock" class="btn btn-option">✊ Stein</button>
+        <button id="paper" class="btn btn-option">✋ Papier</button>
+        <button id="scissors" class="btn btn-option">✌️ Schere</button>
+      </div>
+
+      <div class="selection" id="player-selection">Deine Wahl: -</div>
+      <div class="selection" id="computer-selection">Computer: -</div>
+
+      <div id="result"></div>
+      <div id="final-result"></div>
+
+      <button id="restart-btn" class="btn">Spiel zurücksetzen</button>
+    </div>
+  </div>
+
+  <script>
+    // Spielvariablen
+    let playerScore = 0;
+    let computerScore = 0;
+    let currentRound = 1;
+    let totalRounds = 3;
+    let gameActive = false;
+
+    // DOM-Elemente
+    const setupScreen = document.getElementById('setup-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const roundsInput = document.getElementById('rounds');
+    const totalRoundsSpan = document.getElementById('total-rounds');
+    const roundInfo = document.getElementById('round-info');
+    const scoreDisplay = document.getElementById('score');
+    const playerSelectionDisplay = document.getElementById('player-selection');
+    const computerSelectionDisplay = document.getElementById('computer-selection');
+    const resultDisplay = document.getElementById('result');
+    const finalResultDisplay = document.getElementById('final-result');
+    const rockBtn = document.getElementById('rock');
+    const paperBtn = document.getElementById('paper');
+    const scissorsBtn = document.getElementById('scissors');
+
+    // Audio-Konfiguration mittels Web Audio API
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      if (type === 'roundWin') {
+        oscillator.frequency.value = 880;
+      } else if (type === 'gameOver') {
+        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(220, audioContext.currentTime + 0.5);
+      }
+
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.1;
+      oscillator.start();
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    function getComputerChoice() {
+      const choices = ['✊ Stein', '✋ Papier', '✌️ Schere'];
+      const randomIndex = Math.floor(Math.random() * choices.length);
+      return choices[randomIndex];
+    }
+
+    function determineWinner(playerChoice, computerChoice) {
+      if (playerChoice === computerChoice) return 'unentschieden';
+      if (
+        (playerChoice === '✊ Stein' && computerChoice === '✌️ Schere') ||
+        (playerChoice === '✋ Papier' && computerChoice === '✊ Stein') ||
+        (playerChoice === '✌️ Schere' && computerChoice === '✋ Papier')
+      ) {
+        return 'spieler';
+      } else {
+        return 'computer';
+      }
+    }
+
+    function updateScore(winner) {
+      if (winner === 'spieler') {
+        playerScore++;
+        playSound('roundWin');
+      } else if (winner === 'computer') {
+        computerScore++;
+      }
+      scoreDisplay.textContent = `Spieler: ${playerScore} - Computer: ${computerScore}`;
+    }
+
+    function endGame() {
+      gameActive = false;
+      let message = '';
+      if (playerScore > computerScore) {
+        message = `Du hast das Spiel ${playerScore}-${computerScore} gewonnen! 🎉`;
+      } else if (computerScore > playerScore) {
+        message = `Du hast das Spiel ${playerScore}-${computerScore} verloren. 😢`;
+      } else {
+        message = `Unentschieden ${playerScore}-${computerScore}. 🤝`;
+      }
+      finalResultDisplay.textContent = message;
+      playSound('gameOver');
+    }
+
+    function playRound(playerChoice) {
+      if (!gameActive) return;
+      const computerChoice = getComputerChoice();
+      const winner = determineWinner(playerChoice, computerChoice);
+
+      playerSelectionDisplay.textContent = `Deine Wahl: ${playerChoice}`;
+      computerSelectionDisplay.textContent = `Computer: ${computerChoice}`;
+
+      if (winner === 'unentschieden') {
+        resultDisplay.textContent = 'Diese Runde ist unentschieden!';
+      } else if (winner === 'spieler') {
+        resultDisplay.textContent = 'Du hast diese Runde gewonnen!';
+      } else {
+        resultDisplay.textContent = 'Du hast diese Runde verloren.';
+      }
+
+      updateScore(winner);
+      currentRound++;
+
+      if (currentRound <= totalRounds) {
+        roundInfo.textContent = `Runde ${currentRound} von ${totalRounds}`;
+      } else {
+        endGame();
+      }
+    }
+
+    function resetGame() {
+      playerScore = 0;
+      computerScore = 0;
+      currentRound = 1;
+      gameActive = true;
+
+      playerSelectionDisplay.textContent = 'Deine Wahl: -';
+      computerSelectionDisplay.textContent = 'Computer: -';
+      resultDisplay.textContent = '';
+      finalResultDisplay.textContent = '';
+      roundInfo.textContent = `Runde ${currentRound} von ${totalRounds}`;
+      scoreDisplay.textContent = `Spieler: ${playerScore} - Computer: ${computerScore}`;
+    }
+
+    function startGame() {
+      totalRounds = parseInt(roundsInput.value, 10);
+      if (isNaN(totalRounds) || totalRounds < 1 || totalRounds > 11) {
+        alert('Bitte eine gültige Rundenzahl eingeben (1–11)');
+        return;
+      }
+      totalRoundsSpan.textContent = totalRounds;
+      setupScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      resetGame();
+    }
+
+    // Event-Listener
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', resetGame);
+    rockBtn.addEventListener('click', () => playRound('✊ Stein'));
+    paperBtn.addEventListener('click', () => playRound('✋ Papier'));
+    scissorsBtn.addEventListener('click', () => playRound('✌️ Schere'));
+    roundsInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        startGame();
+      }
+    });
+  </script>
+</body>
+</html>

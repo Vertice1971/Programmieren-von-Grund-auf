@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Personalisierte Begrüßung</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 20%;
+      font-size: 2rem;
+    }
+    .rot {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="begrüßung"></div>
+
+  <script>
+    document.getElementById("begrüßung").innerHTML = "Hallo, Welt";
+
+    setTimeout(() => {
+      let name = prompt("Wie heißt du?");
+      document.getElementById("begrüßung").innerHTML += "<br><span class='rot'>Hallo, " + name + "</span>";
+    }, 100); // wartet 100 Millisekunden, bevor nach dem Namen gefragt wird
+  </script>
+</body>
+</html>

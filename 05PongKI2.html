@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Klassisches Pong</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="pong" width="800" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
+
+    const netz = {
+      x: canvas.width / 2 - 1,
+      y: 0,
+      breite: 2,
+      höhe: canvas.height,
+      farbe: "WHITE"
+    };
+
+    const spieler = {
+      x: 10,
+      y: canvas.height / 2 - 50,
+      breite: 10,
+      höhe: 100,
+      farbe: "WHITE",
+      punkte: 0
+    };
+
+    const ki = {
+      x: canvas.width - 20,
+      y: canvas.height / 2 - 50,
+      breite: 10,
+      höhe: 100,
+      farbe: "WHITE",
+      punkte: 0
+    };
+
+    const ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: 10,
+      geschwindigkeit: 5,
+      vx: 5,
+      vy: 5,
+      farbe: "WHITE"
+    };
+
+    function zeichneRechteck(x, y, w, h, farbe) {
+      ctx.fillStyle = farbe;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function zeichneKreis(x, y, r, farbe) {
+      ctx.fillStyle = farbe;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2, false);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function zeichneText(text, x, y, farbe) {
+      ctx.fillStyle = farbe;
+      ctx.font = "45px Arial";
+      ctx.fillText(text, x, y);
+    }
+
+    function zeichneNetz() {
+      zeichneRechteck(netz.x, netz.y, netz.breite, netz.höhe, netz.farbe);
+    }
+
+    function zeichne() {
+      zeichneRechteck(0, 0, canvas.width, canvas.height, "BLACK");
+      zeichneNetz();
+      zeichneText(spieler.punkte, canvas.width / 4, 50, "WHITE");
+      zeichneText(ki.punkte, 3 * canvas.width / 4, 50, "WHITE");
+      zeichneRechteck(spieler.x, spieler.y, spieler.breite, spieler.höhe, spieler.farbe);
+      zeichneRechteck(ki.x, ki.y, ki.breite, ki.höhe, ki.farbe);
+      zeichneKreis(ball.x, ball.y, ball.radius, ball.farbe);
+    }
+
+    function kollision(b, p) {
+      b.oben = b.y - b.radius;
+      b.unten = b.y + b.radius;
+      b.links = b.x - b.radius;
+      b.rechts = b.x + b.radius;
+
+      p.oben = p.y;
+      p.unten = p.y + p.höhe;
+      p.links = p.x;
+      p.rechts = p.x + p.breite;
+
+      return b.rechts > p.links && b.oben < p.unten && b.links < p.rechts && b.unten > p.oben;
+    }
+
+    function ballZurücksetzen() {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.vx = -ball.vx;
+      ball.geschwindigkeit = 5;
+    }
+
+    function aktualisieren() {
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Einfache KI folgt dem Ball
+      ki.y += ((ball.y - (ki.y + ki.höhe / 2))) * 0.1;
+
+      if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+        ball.vy = -ball.vy;
+      }
+
+      let spielerAktiv = (ball.x < canvas.width / 2) ? spieler : ki;
+
+      if (kollision(ball, spielerAktiv)) {
+        let treffer = ball.y - (spielerAktiv.y + spielerAktiv.höhe / 2);
+        treffer = treffer / (spielerAktiv.höhe / 2);
+        let winkel = (Math.PI / 4) * treffer;
+        let richtung = (ball.x < canvas.width / 2) ? 1 : -1;
+        ball.vx = richtung * ball.geschwindigkeit * Math.cos(winkel);
+        ball.vy = ball.geschwindigkeit * Math.sin(winkel);
+        ball.geschwindigkeit += 0.5;
+      }
+
+      if (ball.x - ball.radius < 0) {
+        ki.punkte++;
+        ballZurücksetzen();
+      } else if (ball.x + ball.radius > canvas.width) {
+        spieler.punkte++;
+        ballZurücksetzen();
+      }
+    }
+
+    function spiel() {
+      aktualisieren();
+      zeichne();
+    }
+
+    setInterval(spiel, 1000 / 60);
+
+    // Steuerung
+    document.addEventListener("keydown", function(evt) {
+      if (evt.key === "w" || evt.key === "W") spieler.y -= 20;
+      if (evt.key === "s" || evt.key === "S") spieler.y += 20;
+    });
+  </script>
+</body>
+</html>

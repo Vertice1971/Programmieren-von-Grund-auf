@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stein, Papier oder Schere</title>
+  <style>
+    :root {
+      /* Skalierbare Schriftgrößen */
+      --fs-title: clamp(1.5rem, 4vw, 2.5rem);
+      --fs-text: clamp(1rem, 2.5vw, 1.2rem);
+      --btn-padding: clamp(0.5rem, 1.5vw, 1rem) clamp(1rem, 3vw, 2rem);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 1rem;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+      font-size: var(--fs-title);
+    }
+
+    p, #round-info, #score, .selection, #result, #final-result {
+      font-size: var(--fs-text);
+      margin: 0.75rem 0;
+    }
+
+    .btn {
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      padding: var(--btn-padding);
+      margin: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: var(--fs-text);
+      transition: background-color 0.3s;
+      flex-shrink: 0;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-option {
+      /* Desktop-Basis: 30% Breite */
+      width: 30%;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #rounds, #strategy-select {
+      padding: 0.5rem;
+      font-size: var(--fs-text);
+      margin: 0.5rem 0;
+      width: 100%;
+      max-width: 200px;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Kleinbildschirm: Buttons 100% */
+    @media (max-width: 480px) {
+      .btn-option {
+        width: 100%;
+      }
+    }
+
+    /* Tablet / Mittel: Buttons 45% */
+    @media (min-width: 481px) and (max-width: 800px) {
+      .btn-option {
+        width: 45%;
+      }
+    }
+
+    /* Desktop: wieder 30% */
+    @media (min-width: 801px) {
+      .btn-option {
+        width: 30%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="setup-screen">
+      <h1>Stein, Papier oder Schere</h1>
+      <p>Wähle Anzahl der Runden:</p>
+      <input type="number" id="rounds" min="1" max="11" value="3">
+
+      <p>Wähle die Strategie der Maschine:</p>
+      <select id="strategy-select">
+        <option value="random">Reiner Zufall</option>
+        <option value="imitate">Spieler nachahmen</option>
+        <option value="counter">Gewinnzug kontern</option>
+      </select>
+
+      <button id="start-btn" class="btn">Spiel starten</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+      <h1>Stein, Papier oder Schere</h1>
+      <div id="round-info">Runde 1 von <span id="total-rounds">3</span></div>
+      <div id="strategy-display">Strategie: Reiner Zufall</div>
+      <div id="score">Spieler: 0 – Maschine: 0</div>
+
+      <p>Wähle deinen Zug:</p>
+      <div class="btn-group">
+        <button id="rock" class="btn btn-option">🪨 Stein</button>
+        <button id="paper" class="btn btn-option">🧻 Papier</button>
+        <button id="scissors" class="btn btn-option">✂️ Schere</button>
+      </div>
+
+      <div class="selection" id="player-selection">Deine Wahl: –</div>
+      <div class="selection" id="computer-selection">Maschine: –</div>
+
+      <div id="result"></div>
+      <div id="final-result"></div>
+
+      <button id="restart-btn" class="btn">Neu starten</button>
+    </div>
+  </div>
+
+  <script>
+    let playerScore = 0;
+    let computerScore = 0;
+    let currentRound = 1;
+    let totalRounds = 3;
+    let gameActive = false;
+    let messageId = 0;
+    let selectedStrategy = 'random';
+    let lastPlayerChoice = null;
+    let lastComputerWin = null;
+
+    const setupScreen = document.getElementById('setup-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const roundsInput = document.getElementById('rounds');
+    const strategySelect = document.getElementById('strategy-select');
+    const totalRoundsSpan = document.getElementById('total-rounds');
+    const roundInfo = document.getElementById('round-info');
+    const strategyDisplay = document.getElementById('strategy-display');
+    const scoreDisplay = document.getElementById('score');
+    const playerSelectionDisplay = document.getElementById('player-selection');
+    const computerSelectionDisplay = document.getElementById('computer-selection');
+    const resultDisplay = document.getElementById('result');
+    const finalResultDisplay = document.getElementById('final-result');
+    const rockBtn = document.getElementById('rock');
+    const paperBtn = document.getElementById('paper');
+    const scissorsBtn = document.getElementById('scissors');
+
+    const choices = {
+      rock: '🪨 Stein',
+      paper: '🧻 Papier',
+      scissors: '✂️ Schere'
+    };
+
+    const beats = {
+      rock: 'scissors',
+      paper: 'rock',
+      scissors: 'paper'
+    };
+
+    const strategyNames = {
+      random: 'Reiner Zufall',
+      imitate: 'Spieler nachahmen',
+      counter: 'Gewinnzug kontern'
+    };
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      switch (type) {
+        case 'roundWin':   osc.frequency.value = 880; break;
+        case 'roundLose':  osc.frequency.value = 220; break;
+        case 'roundDraw':  osc.frequency.value = 440; break;
+        case 'gameOver':
+          osc.frequency.setValueAtTime(440, audioContext.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(220, audioContext.currentTime + 0.5);
+          break;
+        default: return;
+      }
+      osc.type = 'sine';
+      gain.gain.value = 0.1;
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      osc.stop(audioContext.currentTime + 0.5);
+    }
+
+    function getComputerChoice() {
+      if (selectedStrategy === 'random') {
+        const keys = Object.keys(choices);
+        return keys[Math.floor(Math.random() * keys.length)];
+      }
+      if (selectedStrategy === 'imitate') {
+        return lastPlayerChoice || Object.keys(choices)[Math.floor(Math.random() * 3)];
+      }
+      if (selectedStrategy === 'counter') {
+        if (lastComputerWin) {
+          const counterToWin = Object.keys(beats).find(k => beats[k] === lastComputerWin);
+          return counterToWin || Object.keys(choices)[Math.floor(Math.random() * 3)];
+        } else {
+          return Object.keys(choices)[Math.floor(Math.random() * 3)];
+        }
+      }
+      return 'rock';
+    }
+
+    function determineWinner(player, computer) {
+      if (player === computer) return 'empate';
+      if (beats[player] === computer) return 'jugador';
+      return 'computadora';
+    }
+
+    function updateScore(winner) {
+      if (winner === 'jugador') {
+        playerScore++;
+        playSound('roundWin');
+      } else if (winner === 'computadora') {
+        computerScore++;
+        playSound('roundLose');
+      } else {
+        playSound('roundDraw');
+      }
+      scoreDisplay.textContent = `Spieler: ${playerScore} – Maschine: ${computerScore}`;
+    }
+
+    function endGame() {
+      gameActive = false;
+      let message = '';
+      if (playerScore > computerScore) message = `Gewonnen: ${playerScore}-${computerScore}! 🎉`;
+      else if (computerScore > playerScore) message = `Verloren: ${playerScore}-${computerScore}. 😢`;
+      else message = `Unentschieden: ${playerScore}-${computerScore}. 🤝`;
+      finalResultDisplay.textContent = message;
+      playSound('gameOver');
+    }
+
+    function playRound(playerChoiceKey) {
+      if (!gameActive) return;
+      const computerChoiceKey = getComputerChoice();
+      const winner = determineWinner(playerChoiceKey, computerChoiceKey);
+      playerSelectionDisplay.textContent = `Deine Wahl: ${choices[playerChoiceKey]}`;
+      computerSelectionDisplay.textContent = `Maschine: ${choices[computerChoiceKey]}`;
+      lastPlayerChoice = playerChoiceKey;
+      if (winner === 'computadora') lastComputerWin = computerChoiceKey;
+      messageId++;
+      const currentId = messageId;
+      const msg =
+        winner === 'empate'   ? 'Unentschieden!' :
+        winner === 'jugador'  ? 'Du hast diese Runde gewonnen!' :
+                                 'Du hast diese Runde verloren.';
+      resultDisplay.textContent = msg;
+      setTimeout(() => {
+        if (messageId === currentId) resultDisplay.textContent = '';
+      }, 2000);
+      updateScore(winner);
+      currentRound++;
+      if (currentRound <= totalRounds) {
+        roundInfo.textContent = `Runde ${currentRound} von ${totalRounds}`;
+      } else {
+        endGame();
+      }
+    }
+
+    function resetGame() {
+      playerScore = computerScore = 0;
+      currentRound = 1;
+      gameActive = true;
+      lastPlayerChoice = null;
+      lastComputerWin = null;
+      playerSelectionDisplay.textContent   = 'Deine Wahl: –';
+      computerSelectionDisplay.textContent = 'Maschine: –';
+      resultDisplay.textContent            = '';
+      finalResultDisplay.textContent       = '';
+      roundInfo.textContent                = `Runde ${currentRound} von ${totalRounds}`;
+      scoreDisplay.textContent             = `Spieler: ${playerScore} – Maschine: ${computerScore}`;
+      strategyDisplay.textContent          = `Strategie: ${strategyNames[selectedStrategy]}`;
+    }
+
+    function startGame() {
+      totalRounds = parseInt(roundsInput.value);
+      if (isNaN(totalRounds) || totalRounds < 1 || totalRounds > 11) {
+        alert('Bitte eine gültige Rundenzahl (1–11) eingeben');
+        return;
+      }
+      selectedStrategy = strategySelect.value;
+      totalRoundsSpan.textContent = totalRounds;
+      setupScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      resetGame();
+    }
+
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', () => {
+      setupScreen.classList.remove('hidden');
+      gameScreen.classList.add('hidden');
+    });
+    rockBtn. addEventListener('click',    () => playRound('rock'));
+    paperBtn.addEventListener('click',    () => playRound('paper'));
+    scissorsBtn.addEventListener('click', () => playRound('scissors'));
+    roundsInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') startGame();
+    });
+  </script>
+</body>
+</html>

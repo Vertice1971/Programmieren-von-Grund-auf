@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Hallo, Welt in verschiedenen Sprachen</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f4f4;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    pre {
+      background: #222;
+      color: #0f0;
+      padding: 1rem;
+      overflow-x: auto;
+      border-radius: 0.5rem;
+    }
+    section {
+      margin-bottom: 2rem;
+    }
+    button {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #output {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>„Hallo, Welt“ in verschiedenen Sprachen</h1>
+
+  <section>
+    <h2>Python</h2>
+    <pre>print("Hallo, Welt")</pre>
+  </section>
+
+  <section>
+    <h2>C</h2>
+    <pre>#include &lt;stdio.h&gt;
+int main() {
+    printf("Hallo, Welt\n");
+    return 0;
+}</pre>
+  </section>
+
+  <section>
+    <h2>Java</h2>
+    <pre>public class HalloWelt {
+    public static void main(String[] args) {
+        System.out.println("Hallo, Welt");
+    }
+}</pre>
+  </section>
+
+  <section>
+    <h2>JavaScript (ausführbar)</h2>
+    <pre>console.log("Hallo, Welt");</pre>
+    <button onclick="document.getElementById('output').textContent = 'Hallo, Welt';">
+      Ausführen
+    </button>
+    <div id="output"></div>
+  </section>
+</body>
+</html>
