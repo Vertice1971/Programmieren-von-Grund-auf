@@ -1,0 +1,49 @@
+{
+  "fragen": [
+    {
+      "text": "Was war eine der Hauptursachen der Französischen Revolution?",
+      "optionen": {
+        "a": "Die Entdeckung Amerikas",
+        "b": "Die wirtschaftliche und soziale Krise des Ancien Régime",
+        "c": "Der Spanische Erbfolgekrieg"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Welche Person war entscheidend für den Aufbau des napoleonischen Imperiums?",
+      "optionen": {
+        "a": "Ludwig XVI.",
+        "b": "Robespierre",
+        "c": "Napoleon Bonaparte"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Wann begann ungefähr die Industrielle Revolution in England?",
+      "optionen": {
+        "a": "Ende des 18. Jahrhunderts",
+        "b": "Mitte des 19. Jahrhunderts",
+        "c": "Anfang des 17. Jahrhunderts"
+      },
+      "antwort": "a"
+    },
+    {
+      "text": "Was war eine soziale Folge der Industriellen Revolution?",
+      "optionen": {
+        "a": "Der Machtzuwachs des Adels",
+        "b": "Das Entstehen einer städtischen Arbeiterklasse",
+        "c": "Die Stärkung des Feudalismus"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Welche Ideologie befürwortete im 19. Jahrhundert Privateigentum und freien Markt?",
+      "optionen": {
+        "a": "Der Liberalismus",
+        "b": "Der utopische Sozialismus",
+        "c": "Der Absolutismus"
+      },
+      "antwort": "a"
+    }
+  ]
+}

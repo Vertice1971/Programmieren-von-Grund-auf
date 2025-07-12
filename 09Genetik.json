@@ -1,0 +1,274 @@
+{
+  "fragen": [
+    {
+      "text": "Was untersucht die Genetik?",
+      "optionen": {
+        "a": "Das Verhalten von Tieren",
+        "b": "Die Vererbung von Eigenschaften",
+        "c": "Das Wachstum von Pflanzen"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was ist ein Gen?",
+      "optionen": {
+        "a": "Ein Protein, das Teil der DNA ist",
+        "b": "Eine Nervenzelle",
+        "c": "Ein DNA-Abschnitt, der ein Merkmal bestimmt"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was ist ein Allel?",
+      "optionen": {
+        "a": "Eine besondere Art von Protein",
+        "b": "Eine alternative Form eines Gens",
+        "c": "Ein defektes Chromosom"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was bedeutet es, wenn ein Individuum homozygot ist?",
+      "optionen": {
+        "a": "Es hat zwei unterschiedliche Allele für ein Merkmal",
+        "b": "Es hat zwei gleiche Allele für ein Merkmal",
+        "c": "Es hat mehr als zwei Allele"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was ist der Genotyp?",
+      "optionen": {
+        "a": "Das äußere Erscheinungsbild eines Organismus",
+        "b": "Die Gesamtheit der Gene eines Individuums",
+        "c": "Die Menge an Proteinen, die ein Organismus produziert"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was ist der Phänotyp?",
+      "optionen": {
+        "a": "Die sichtbare Ausprägung des Genotyps",
+        "b": "Die Nukleotidsequenz der DNA",
+        "c": "Die Zellart, aus der ein Gewebe besteht"
+      },
+      "antwort": "a"
+    },
+    {
+      "text": "Was ist das erste Mendelsche Gesetz?",
+      "optionen": {
+        "a": "Intermediäre Vererbung",
+        "b": "Spaltung der Allele",
+        "c": "Uniformität der F1-Generation"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was geschieht im zweiten Mendelschen Gesetz?",
+      "optionen": {
+        "a": "Das rezessive Merkmal erscheint in der F2-Generation",
+        "b": "Alle Nachkommen sind gleich",
+        "c": "Gene vermischen sich vollständig"
+      },
+      "antwort": "a"
+    },
+    {
+      "text": "Welches Verhältnis ergibt sich im dritten Mendelschen Gesetz (unabhängige Vererbung)?",
+      "optionen": {
+        "a": "3:1",
+        "b": "9:3:3:1",
+        "c": "1:2:1"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Wer stellte die chromosomale Vererbungstheorie auf?",
+      "optionen": {
+        "a": "Mendel",
+        "b": "Watson und Crick",
+        "c": "Sutton und Boveri"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was bewies Thomas Morgan?",
+      "optionen": {
+        "a": "Die Doppelhelix der DNA",
+        "b": "Die geschlechtsgebundene Vererbung",
+        "c": "Die semikonservative Replikation"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was sind homologe Chromosomen?",
+      "optionen": {
+        "a": "Zwei identische Chromosomen von einem Elternteil",
+        "b": "Zwei Chromosomen mit denselben Genen, je eines von jedem Elternteil",
+        "c": "Chromosomen, die sich in der Mitose verdoppeln"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Welche Art der Vererbung wird durch mehrere Gene bestimmt?",
+      "optionen": {
+        "a": "Letale Vererbung",
+        "b": "Dominant-rezessive Vererbung",
+        "c": "Polygenetische Vererbung"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was ist Epistasie?",
+      "optionen": {
+        "a": "Ein Gen beeinflusst mehrere Merkmale",
+        "b": "Ein Gen verändert die Ausprägung eines anderen",
+        "c": "Zwei Gene verdoppeln sich"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was bedeutet es, wenn ein Allel letal ist?",
+      "optionen": {
+        "a": "Es wird nicht im Phänotyp ausgedrückt",
+        "b": "Es verursacht eine leichte Krankheit",
+        "c": "Es kann zum Tod des Individuums führen"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Welches Werkzeug wird verwendet, um genetische Nachkommen vorherzusagen?",
+      "optionen": {
+        "a": "Mikroskop",
+        "b": "Punnett-Quadrat",
+        "c": "Stammbaum"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Welche Kombination bestimmt das männliche Geschlecht beim Menschen?",
+      "optionen": {
+        "a": "XX",
+        "b": "XY",
+        "c": "YY"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Wo befinden sich die meisten geschlechtsgebundenen Gene?",
+      "optionen": {
+        "a": "Y-Chromosom",
+        "b": "X-Chromosom",
+        "c": "Chromosom 21"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Warum zeigen Männer häufiger X-gebundene rezessive Erkrankungen?",
+      "optionen": {
+        "a": "Weil sie mehr Gene haben",
+        "b": "Weil sie zwei X-Chromosomen haben",
+        "c": "Weil sie nur ein X-Chromosom haben"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was ist ein erbliches Merkmal?",
+      "optionen": {
+        "a": "Eine kulturelle Gewohnheit",
+        "b": "Eine durch die Umwelt erworbene Eigenschaft",
+        "c": "Ein biologisches Merkmal, das durch Gene vererbt wird"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was ist ein Locus?",
+      "optionen": {
+        "a": "Eine Mutation in der DNA",
+        "b": "Die Position eines Gens auf dem Chromosom",
+        "c": "Ein rezessives Allel"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was ist intermediäre Vererbung?",
+      "optionen": {
+        "a": "Beide Allele werden vollständig ausgeprägt",
+        "b": "Es entsteht eine Mischform beider Allele",
+        "c": "Eines der Allele wird ausgeschaltet"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was ist Kodominanz?",
+      "optionen": {
+        "a": "Ein Allel dominiert über das andere",
+        "b": "Keines der Allele wird ausgedrückt",
+        "c": "Beide Allele werden gleichzeitig ausgeprägt"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Was ist multipler Allelismus?",
+      "optionen": {
+        "a": "Es gibt mehr als zwei mögliche Allele für ein Gen",
+        "b": "Gene haben mehrere Funktionen",
+        "c": "Gene verdoppeln sich"
+      },
+      "antwort": "a"
+    },
+    {
+      "text": "Was ist Pleiotropie?",
+      "optionen": {
+        "a": "Ein Gen beeinflusst mehrere Merkmale",
+        "b": "Ein Merkmal hängt von vielen Genen ab",
+        "c": "Eine Mutation betrifft nur ein Gen"
+      },
+      "antwort": "a"
+    },
+    {
+      "text": "Was ist eine genetische Karte?",
+      "optionen": {
+        "a": "Eine geografische Darstellung der Gene",
+        "b": "Ein Schema mit der Lage der Gene auf den Chromosomen",
+        "c": "Ein kreisförmiger DNA-Typ"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was zeigt die Einheit Centimorgan an?",
+      "optionen": {
+        "a": "Die Größe eines Gens",
+        "b": "Den relativen Abstand zwischen Genen",
+        "c": "Die Mutationsgeschwindigkeit"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was ist chromosomales Crossing-over?",
+      "optionen": {
+        "a": "Eine Veränderung der DNA",
+        "b": "Eine Kreuzung zwischen nicht-homologen Chromosomen",
+        "c": "Austausch von Fragmenten zwischen homologen Chromosomen"
+      },
+      "antwort": "c"
+    },
+    {
+      "text": "Welches phänotypische Verhältnis erwartet man in der F2 nach dem zweiten Mendelschen Gesetz?",
+      "optionen": {
+        "a": "1:2:1",
+        "b": "3:1",
+        "c": "2:2"
+      },
+      "antwort": "b"
+    },
+    {
+      "text": "Was stellt ein Punnett-Quadrat dar?",
+      "optionen": {
+        "a": "Eine Einmaleins-Tabelle",
+        "b": "Ein Werkzeug zur Darstellung genetischer Kombinationen",
+        "c": "Ein Balkendiagramm"
+      },
+      "antwort": "b"
+    }
+  ]
+}

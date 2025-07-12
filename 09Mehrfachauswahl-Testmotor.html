@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple-Choice-Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #f5f8ff;
+        }
+        .header-info {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        .question-container {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .option {
+            display: block;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .option:hover {
+            background: #e0ebff;
+            transform: scale(1.05);
+        }
+        .correct {
+            background: #c8e6c9;
+            border-color: green;
+        }
+        .incorrect {
+            background: #ffcdd2;
+            border-color: red;
+        }
+        #start-btn, #restart-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #restart-btn {
+            background: #28a745;
+        }
+        #next-btn {
+            position: fixed;
+            right: 20px;
+            top: 30%;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            display: none;
+        }
+        #info-container {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-info">
+        <div>Thomas Hills</div>
+    </div>
+
+    <h1>Multiple-Choice-Test</h1>
+    <label for="file-input">Wähle die JSON-Datei:</label>
+    <input type="file" id="file-input" accept=".json">
+    <div id="info-container"></div>
+    <button id="start-btn">Test starten</button>
+
+    <div id="quiz-container" class="question-container"></div>
+    <button id="next-btn">Weiter</button>
+    <button id="restart-btn">Neustart</button>
+
+    <script>
+        // Thomas Hills
+        // tomcue@iesjuandelacierva.com
+
+        function mischen(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        let fragen = [];
+        let gewählteFragen = [];
+        let aktuelleFrage = 0;
+        let richtig = 0;
+        const quizContainer = document.getElementById('quiz-container');
+        const nextButton = document.getElementById('next-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const startButton = document.getElementById('start-btn');
+        const infoContainer = document.getElementById('info-container');
+        const fileInput = document.getElementById('file-input');
+
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!data.fragen || !Array.isArray(data.fragen)) {
+                            throw new Error('Die JSON-Datei hat nicht das richtige Format.');
+                        }
+                        fragen = data.fragen;
+                        infoContainer.innerHTML = `<p>Die Datei enthält <strong>${fragen.length}</strong> Fragen. Du kannst auswählen, wie viele du beantworten willst.</p>`;
+                        startButton.style.display = 'block';
+                        fileInput.disabled = true;
+                    } catch (error) {
+                        alert('Fehler beim Lesen der JSON-Datei: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        startButton.addEventListener('click', function() {
+            let anzahl = prompt(`Der Test enthält ${fragen.length} Fragen. Wie viele möchtest du spielen?`, fragen.length);
+            anzahl = parseInt(anzahl);
+            if (isNaN(anzahl) || anzahl < 1 || anzahl > fragen.length) {
+                alert('Ungültige Zahl. Es werden alle Fragen gespielt.');
+                anzahl = fragen.length;
+            }
+            gewählteFragen = mischen([...fragen]).slice(0, anzahl);
+            aktuelleFrage = 0;
+            richtig = 0;
+            startButton.style.display = 'none';
+            infoContainer.innerHTML = '';
+            frageZeigen();
+        });
+
+        function frageZeigen() {
+            if (aktuelleFrage < gewählteFragen.length) {
+                quizContainer.innerHTML = '';
+                quizContainer.style.display = 'block';
+                nextButton.style.display = 'none';
+
+                let frage = gewählteFragen[aktuelleFrage];
+                let frageTitel = document.createElement('h2');
+                frageTitel.textContent = frage.text;
+                quizContainer.appendChild(frageTitel);
+
+                let optionenArray = Object.entries(frage.optionen).map(([key, text]) => ({ key, text }));
+                optionenArray = mischen(optionenArray);
+
+                optionenArray.forEach(opt => {
+                    let div = document.createElement('div');
+                    div.classList.add('option');
+                    div.textContent = opt.text;
+                    div.dataset.wert = opt.key;
+                    div.addEventListener('click', function() {
+                        antwortÜberprüfen(this, frage.antwort);
+                    });
+                    quizContainer.appendChild(div);
+                });
+            } else {
+                quizContainer.innerHTML = `<h2>Test beendet!</h2><p>Du hast ${richtig} von ${gewählteFragen.length} Fragen richtig beantwortet.</p>`;
+                nextButton.style.display = 'none';
+                restartButton.style.display = 'block';
+            }
+        }
+
+        function antwortÜberprüfen(element, richtigeAntwort) {
+            let optionen = document.querySelectorAll('.option');
+            optionen.forEach(op => op.style.pointerEvents = 'none');
+
+            if (element.dataset.wert === richtigeAntwort) {
+                element.classList.add('correct');
+                richtig++;
+            } else {
+                element.classList.add('incorrect');
+                let korrekt = document.querySelector(`.option[data-wert='${richtigeAntwort}']`);
+                if (korrekt) korrekt.classList.add('correct');
+            }
+            nextButton.style.display = 'block';
+        }
+
+        nextButton.addEventListener('click', function() {
+            aktuelleFrage++;
+            frageZeigen();
+        });
+
+        restartButton.addEventListener('click', function() {
+            this.style.display = 'none';
+            startButton.style.display = 'none';
+            aktuelleFrage = 0;
+            richtig = 0;
+            infoContainer.innerHTML = `<p>Die Datei enthält <strong>${fragen.length}</strong> Fragen. Du kannst auswählen, wie viele du beantworten willst.</p>`;
+            startButton.style.display = 'block';
+            quizContainer.innerHTML = '';
+            quizContainer.style.display = 'none';
+            fileInput.disabled = false;
+            fileInput.value = "";
+        });
+    </script>
+</body>
+</html>

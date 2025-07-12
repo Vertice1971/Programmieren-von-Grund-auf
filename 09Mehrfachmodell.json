@@ -1,0 +1,31 @@
+{
+    "fragen": [
+        {
+            "text": "Was ist nach Heraklit das grundlegende Prinzip aller Dinge?",
+            "optionen": {
+                "a": "Das Feuer",
+                "b": "Das Wasser",
+                "c": "Die Luft"
+            },
+            "antwort": "a"
+        },
+        {
+            "text": "Was sagte Anaximander, sei das archē?",
+            "optionen": {
+                "a": "Die Zahl",
+                "b": "Das Ápeiron",
+                "c": "Das Atom"
+            },
+            "antwort": "b"
+        },
+        {
+            "text": "Was symbolisiert den Übergang vom Mythos zum Logos in der griechischen Philosophie?",
+            "optionen": {
+                "a": "Das Fortbestehen des magischen Denkens",
+                "b": "Das Entstehen neuer Mythologien",
+                "c": "Den Beginn des rationalen Denkens"
+            },
+            "antwort": "c"
+        }
+    ]
+}
