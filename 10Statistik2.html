@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Würfelsimulation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 900px;
+      margin: 2em auto;
+      padding: 1em;
+      background-color: #f4f4f4;
+      border-radius: 10px;
+    }
+    label, input, button {
+      display: block;
+      margin: 0.5em 0;
+    }
+    .bildschirm { display: none; }
+    .sichtbar { display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      text-align: center;
+    }
+    th { background-color: #eee; }
+    .modus { background-color: #ffeb3b; font-weight: bold; }
+    .tabelle-knöpfe {
+      margin-top: 1em;
+    }
+    #mittelwert-wert {
+      margin-top: 0.5em;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    #medianen-reihe {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      margin: 1em 0;
+    }
+    .würfel-seite {
+      text-align: center;
+      min-width: 50px;
+      padding: 0.5em;
+    }
+    .würfel-symbol {
+      font-size: 2em;
+    }
+    .hervorheben {
+      border: 2px solid red;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Startbildschirm -->
+  <div id="bildschirm-start" class="bildschirm sichtbar">
+    <h1>Würfelsimulation</h1>
+    <label for="seiten">Anzahl der Würfelseiten:</label>
+    <input type="number" id="seiten" min="2" value="6">
+    <label for="würfe">Anzahl der Würfe:</label>
+    <input type="number" id="würfe" min="1" value="100">
+    <button onclick="würfeln()">Würfeln</button>
+    <div id="ergebnisse"></div>
+    <button id="zeigeTabelleBtn" style="display:none;" onclick="tabelleAnzeigen()">Häufigkeitstabelle anzeigen</button>
+  </div>
+
+  <!-- Tabellenbildschirm -->
+  <div id="bildschirm-tabelle" class="bildschirm">
+    <h2>Häufigkeitstabelle</h2>
+    <div class="tabelle-knöpfe">
+      <button onclick="modusUmschalten()">Modus anzeigen</button>
+      <button onclick="mittelwertUmschalten()">Mittelwert anzeigen</button>
+      <button onclick="medianAnzeigen()">Median anzeigen</button>
+      <div id="mittelwert-wert"></div>
+    </div>
+    <div id="häufigkeitstabelle"></div>
+    <button onclick="zurückZurSimulation()">Zurück zur Simulation</button>
+  </div>
+
+  <!-- Medianbildschirm -->
+  <div id="bildschirm-median" class="bildschirm">
+    <h2>Verteilung nach kumulierten Häufigkeiten</h2>
+    <div id="medianen-reihe"></div>
+    <button onclick="medianIdentifizieren()">Median identifizieren</button>
+    <div id="median-info" style="margin-top:1em; font-weight:bold;"></div>
+    <button onclick="zurückZurTabelle()">Zurück zur Häufigkeitstabelle</button>
+  </div>
+
+  <script>
+    let gespeicherteDaten = [];
+    let statistiken = {};
+    let modusSichtbar = false;
+    let mittelwertSichtbar = false;
+
+    function splitMix32(seed) {
+      let h = seed >>> 0;
+      return function() {
+        h += 0x9e3779b9;
+        let t = h;
+        t = Math.imul(t ^ (t >>> 16), 0x85ebca6b);
+        t = Math.imul(t ^ (t >>> 13), 0xc2b2ae35);
+        return (t ^ (t >>> 16)) >>> 0;
+      };
+    }
+    function xoshiro128ss(seedStr) {
+      let seed = 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
+      }
+      const sm = splitMix32(seed);
+      let s = [sm(), sm(), sm(), sm()];
+      function rotl(x,k){return (x<<k)|(x>>> (32-k));}
+      return function() {
+        const result = rotl(s[1]*5,7)*9;
+        const t = s[1]<<9;
+        s[2]^=s[0]; s[3]^=s[1]; s[1]^=s[2]; s[0]^=s[3];
+        s[2]^=t; s[3] = rotl(s[3],11);
+        return (result>>>0)/2**32;
+      };
+    }
+
+    function würfeln() {
+      const seiten = parseInt(document.getElementById('seiten').value);
+      const würfe = parseInt(document.getElementById('würfe').value);
+      if (seiten<2||würfe<1||isNaN(seiten)||isNaN(würfe)) {
+        alert("Gültige Werte eingeben.");
+        return;
+      }
+      const seed = (Date.now()+Math.random()).toString();
+      const rng = xoshiro128ss(seed);
+      let ergebnisse = [];
+      for (let i=0;i<würfe;i++){
+        ergebnisse.push(Math.floor(rng()*seiten)+1);
+      }
+      gespeicherteDaten = ergebnisse;
+      statistikenBerechnen(seiten,ergebnisse);
+      ergebnisseAnzeigen(ergebnisse);
+    }
+
+    function statistikenBerechnen(seiten, daten) {
+      const N = daten.length;
+      const freqAbs = Array(seiten).fill(0);
+      daten.forEach(v=>freqAbs[v-1]++);
+      let sum=0;
+      const freqKum = freqAbs.map(f=>(sum+=f,sum));
+      const freqRel = freqAbs.map(f=>f/N);
+      const freqKumRel = freqRel.map((h,i,a)=>a.slice(0,i+1).reduce((x,y)=>x+y,0));
+      statistiken = {
+        absoluteHäufigkeiten: freqAbs,
+        kumulierteHäufigkeiten: freqKum,
+        relativeHäufigkeiten: freqRel,
+        kumulierteRelativeHäufigkeiten: freqKumRel,
+        gesamt: N
+      };
+    }
+
+    function ergebnisseAnzeigen(res) {
+      document.getElementById('ergebnisse').innerHTML =
+        `<h2>Ergebnisse:</h2><p>${res.join(', ')}</p>`;
+      document.getElementById('zeigeTabelleBtn').style.display = 'block';
+    }
+
+    function tabelleAnzeigen() {
+      modusSichtbar=false; mittelwertSichtbar=false;
+      document.getElementById('mittelwert-wert').innerHTML = '';
+      tabelleErzeugen();
+      document.getElementById('bildschirm-start').classList.remove('sichtbar');
+      document.getElementById('bildschirm-tabelle').classList.add('sichtbar');
+    }
+
+    function tabelleErzeugen() {
+      const t = statistiken, fi=t.absoluteHäufigkeiten,
+            Fi=t.kumulierteHäufigkeiten,
+            hi=t.relativeHäufigkeiten,
+            Hi=t.kumulierteRelativeHäufigkeiten,
+            N=t.gesamt;
+      const modusMax = Math.max(...fi);
+      const totalSpalten = 5 + (mittelwertSichtbar?1:0);
+      let html = `<table>
+        <thead><tr>
+          <th>Seite</th><th>fi</th><th>Fi</th><th>hi</th><th>Hi</th>
+          ${mittelwertSichtbar?'<th>xi·fi</th>':''}
+        </tr></thead><tbody>`;
+      let summeXiFi=0;
+      for(let i=0;i<fi.length;i++){
+        const xi=i+1, fi_i=fi[i], hi_i=hi[i], Hi_i=Hi[i], xiFi=xi*fi_i;
+        summeXiFi+=xiFi;
+        const klasse = (modusSichtbar && fi_i===modusMax)?'modus':'';
+        html+=`<tr>
+          <td>${xi}</td>
+          <td class="${klasse}">${fi_i}</td>
+          <td>${Fi[i]}</td>
+          <td>${hi_i.toFixed(4)}</td>
+          <td>${Hi_i.toFixed(4)}</td>
+          ${mittelwertSichtbar?`<td>${xiFi}</td>`:''}
+        </tr>`;
+      }
+      if(mittelwertSichtbar){
+        html+=`<tr class="gesamt-zeile">
+          <td colspan="${totalSpalten-1}" style="text-align:right;">∑ (xi·fi)</td>
+          <td>${summeXiFi}</td>
+        </tr>`;
+        const mittelwert = summeXiFi/N;
+        document.getElementById('mittelwert-wert').innerText =
+          `x̄ = (∑ xi·fi) / N = (${summeXiFi}/${N}) = ${mittelwert.toFixed(4)}`;
+      }
+      html+=`</tbody></table>`;
+      document.getElementById('häufigkeitstabelle').innerHTML = html;
+    }
+
+    function modusUmschalten() {
+      modusSichtbar = !modusSichtbar;
+      tabelleErzeugen();
+    }
+    function mittelwertUmschalten() {
+      mittelwertSichtbar = !mittelwertSichtbar;
+      tabelleErzeugen();
+    }
+
+    function medianAnzeigen(){
+      document.getElementById('bildschirm-tabelle').classList.remove('sichtbar');
+      document.getElementById('bildschirm-median').classList.add('sichtbar');
+      const fi = statistiken.absoluteHäufigkeiten;
+      const Fi = statistiken.kumulierteHäufigkeiten;
+      let von=1, html='';
+      const symbole=["⚀","⚁","⚂","⚃","⚄","⚅"];
+      for(let i=0;i<fi.length;i++){
+        const bis=Fi[i];
+        const seite=symbole[i]||('🎲'+(i+1));
+        html+=`<div class="würfel-seite">
+          <div class="würfel-symbol">${seite}</div>
+          <div>${von} – ${bis}</div>
+        </div>`;
+        von=bis+1;
+      }
+      document.getElementById('medianen-reihe').innerHTML = html;
+      document.getElementById('median-info').innerText = '';
+    }
+    function medianIdentifizieren(){
+      const N=statistiken.gesamt;
+      const pos = (N%2===0)?(N/2):((N+1)/2);
+      const Fi=statistiken.kumulierteHäufigkeiten;
+      let medianIndex=-1;
+      for(let i=0;i<Fi.length;i++){
+        if(Fi[i]>=pos){ medianIndex=i; break; }
+      }
+      document.getElementById('median-info').innerText =
+        `Median: Position ${pos} von ${N}, Seite ${medianIndex+1}.`;
+      const divs = document.querySelectorAll('#medianen-reihe .würfel-seite');
+      divs.forEach(d=>d.classList.remove('hervorheben'));
+      if(medianIndex>=0) divs[medianIndex].classList.add('hervorheben');
+    }
+
+    function zurückZurTabelle(){
+      document.getElementById('bildschirm-median').classList.remove('sichtbar');
+      document.getElementById('bildschirm-tabelle').classList.add('sichtbar');
+    }
+    function zurückZurSimulation(){
+      document.getElementById('bildschirm-tabelle').classList.remove('sichtbar');
+      document.getElementById('bildschirm-start').classList.add('sichtbar');
+    }
+  </script>
+</body>
+</html>

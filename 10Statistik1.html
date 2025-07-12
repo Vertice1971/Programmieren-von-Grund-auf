@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Würfelsimulation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 900px;
+      margin: 2em auto;
+      padding: 1em;
+      background-color: #f4f4f4;
+      border-radius: 10px;
+      text-align: center;
+    }
+    label, input, button {
+      display: block;
+      margin: 0.5em auto;
+    }
+    .bildschirm {
+      display: none;
+    }
+    .sichtbar {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <!-- Startbildschirm -->
+  <div id="bildschirm-start" class="bildschirm sichtbar">
+    <h1>Würfelsimulation</h1>
+    <label for="seiten">Anzahl der Würfelseiten:</label>
+    <input type="number" id="seiten" min="2" value="6">
+    <label for="würfe">Anzahl der Würfe:</label>
+    <input type="number" id="würfe" min="1" value="100">
+    <button onclick="simulieren()">Würfeln</button>
+    <div id="ergebnisse"></div>
+    <button id="zeigeTabelleBtn" style="display:none;" onclick="tabelleAnzeigen()">Häufigkeitstabelle anzeigen</button>
+  </div>
+
+  <!-- Tabellenbildschirm -->
+  <div id="bildschirm-tabelle" class="bildschirm">
+    <h2>Häufigkeitstabelle</h2>
+    <div id="häufigkeitstabelle"></div>
+    <button onclick="zurück()">Zurück zur Simulation</button>
+  </div>
+
+  <script>
+    let gespeicherteDaten = [];
+    let statistiken = {};
+
+    // PRNG xoshiro128** basierend auf Text-Seed
+    function splitMix32(seed) {
+      let h = seed >>> 0;
+      return function() {
+        h += 0x9e3779b9;
+        let t = h;
+        t = Math.imul(t ^ (t >>> 16), 0x85ebca6b);
+        t = Math.imul(t ^ (t >>> 13), 0xc2b2ae35);
+        return (t ^ (t >>> 16)) >>> 0;
+      };
+    }
+    function xoshiro128ss(seedStr) {
+      let seed = 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
+      }
+      const sm = splitMix32(seed);
+      let s = [sm(), sm(), sm(), sm()];
+      function rotl(x, k) {
+        return (x << k) | (x >>> (32 - k));
+      }
+      return function() {
+        const result = rotl(s[1] * 5, 7) * 9;
+        const t = s[1] << 9;
+        s[2] ^= s[0];
+        s[3] ^= s[1];
+        s[1] ^= s[2];
+        s[0] ^= s[3];
+        s[2] ^= t;
+        s[3] = rotl(s[3], 11);
+        return (result >>> 0) / 2**32;
+      };
+    }
+
+    // Simulation der Würfe
+    function simulieren() {
+      const seiten = parseInt(document.getElementById('seiten').value);
+      const würfe = parseInt(document.getElementById('würfe').value);
+      if (isNaN(seiten) || isNaN(würfe) || seiten < 2 || würfe < 1) {
+        alert("Gültige Werte eingeben (mindestens 2 Seiten und 1 Wurf).");
+        return;
+      }
+      const seed = (Date.now() + Math.random()).toString();
+      const rng = xoshiro128ss(seed);
+      const ergebnisse = [];
+      for (let i = 0; i < würfe; i++) {
+        ergebnisse.push(Math.floor(rng() * seiten) + 1);
+      }
+      gespeicherteDaten = ergebnisse;
+      statistikenBerechnen(seiten, ergebnisse);
+      ergebnisseAnzeigen(ergebnisse);
+    }
+
+    // Berechnung der absoluten und kumulierten Häufigkeiten
+    function statistikenBerechnen(seiten, daten) {
+      const gesamt = daten.length;
+      const absFrequenzen = Array(seiten).fill(0);
+      daten.forEach(v => absFrequenzen[v - 1]++);
+      const kumFrequenzen = [];
+      let akk = 0;
+      absFrequenzen.forEach(f => {
+        akk += f;
+        kumFrequenzen.push(akk);
+      });
+      statistiken = { absoluteHäufigkeiten: absFrequenzen, kumulierteHäufigkeiten: kumFrequenzen, gesamt };
+    }
+
+    // Anzeige der Ergebnisliste und Aktivierung des Tabellen-Buttons
+    function ergebnisseAnzeigen(ergebnisse) {
+      document.getElementById('ergebnisse').innerHTML =
+        `<h2>Ergebnisse:</h2><p>${ergebnisse.join(', ')}</p>`;
+      document.getElementById('zeigeTabelleBtn').style.display = 'block';
+    }
+
+    // Umschalten zur Tabellenansicht
+    function tabelleAnzeigen() {
+      document.getElementById('bildschirm-start').classList.remove('sichtbar');
+      document.getElementById('bildschirm-tabelle').classList.add('sichtbar');
+      tabelleGenerieren();
+    }
+
+    // Erzeugung der einfachen Häufigkeitstabelle
+    function tabelleGenerieren() {
+      const { absoluteHäufigkeiten: absFrequenzen, kumulierteHäufigkeiten: kumFrequenzen } = statistiken;
+      const seiten = absFrequenzen.length;
+      let html = `<table>
+        <thead>
+          <tr><th>Seite</th><th>fi</th><th>Fi</th></tr>
+        </thead><tbody>`;
+      for (let i = 0; i < seiten; i++) {
+        html += `<tr>
+          <td>${i + 1}</td>
+          <td>${absFrequenzen[i]}</td>
+          <td>${kumFrequenzen[i]}</td>
+        </tr>`;
+      }
+      html += `</tbody></table>`;
+      document.getElementById('häufigkeitstabelle').innerHTML = html;
+    }
+
+    // Zurück zur Simulation
+    function zurück() {
+      document.getElementById('bildschirm-tabelle').classList.remove('sichtbar');
+      document.getElementById('bildschirm-start').classList.add('sichtbar');
+      document.getElementById('zeigeTabelleBtn').style.display = 'none';
+      document.getElementById('ergebnisse').innerHTML = '';
+    }
+  </script>
+</body>
+</html>
