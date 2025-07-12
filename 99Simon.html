@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simon sagt – Endgültige Version</title>
+  <style>
+    :root {
+      --fs-title: clamp(2rem, 6vw, 3rem);
+      --fs-text: clamp(1rem, 2.5vw, 1.25rem);
+      --pad-size: min(90vw, 320px);
+      --center-size: clamp(90px, 15vw, 120px);
+      --btn-pad: clamp(0.5rem, 1.5vw, 1rem);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      font-family: Arial, sans-serif;
+      color: #fff;
+      padding: 1rem;
+    }
+
+    .container {
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: var(--fs-title);
+      margin-bottom: 1rem;
+      color: #ffd700;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    }
+
+    .spielfeld {
+      position: relative;
+      width: var(--pad-size);
+      height: var(--pad-size);
+      margin: 1rem auto;
+      border-radius: 50%;
+      background: #333;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+
+    .farbe {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .farbe.aktiv {
+      opacity: 0.8;
+      transform: scale(0.95);
+      box-shadow: inset 0 0 10px white;
+    }
+
+    .gruen {
+      top: 0;
+      left: 0;
+      background: #2ecc71;
+      border-top-left-radius: 100%;
+    }
+
+    .rot {
+      top: 0;
+      right: 0;
+      background: #e74c3c;
+      border-top-right-radius: 100%;
+    }
+
+    .gelb {
+      bottom: 0;
+      left: 0;
+      background: #f1c40f;
+      border-bottom-left-radius: 100%;
+    }
+
+    .blau {
+      bottom: 0;
+      right: 0;
+      background: #3498db;
+      border-bottom-right-radius: 100%;
+    }
+
+    .mittelkreis {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: var(--center-size);
+      height: var(--center-size);
+      background: #2c3e50;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+    }
+
+    .punktestand {
+      font-size: var(--fs-title);
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .meldung {
+      margin: 1rem 0;
+      min-height: 1.5em;
+      font-size: var(--fs-text);
+      color: #ffd700;
+    }
+
+    .steuerung {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: var(--btn-pad) 1.5rem;
+      border: none;
+      border-radius: 5px;
+      background: #3498db;
+      color: #fff;
+      font-size: var(--fs-text);
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .strikt-modus {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SIMON SAGT</h1>
+    <div class="spielfeld">
+      <div class="farbe gruen" id="gruen"></div>
+      <div class="farbe rot" id="rot"></div>
+      <div class="farbe gelb" id="gelb"></div>
+      <div class="farbe blau" id="blau"></div>
+      <div class="mittelkreis">
+        <div class="punktestand" id="punktestand">0</div>
+      </div>
+    </div>
+    <div class="meldung" id="meldung">Drücke Start</div>
+    <div class="steuerung">
+      <button id="starten-btn">Starten</button>
+      <button id="zuruecksetzen-btn">Zurücksetzen</button>
+    </div>
+    <div class="strikt-modus">
+      <input type="checkbox" id="strikt-modus">
+      <label for="strikt-modus">Strikter Modus</label>
+    </div>
+  </div>
+
+  <script>
+    // ===== KONSTANTEN =====
+    const FARBEN = {
+      gruen: { freq: 440, taste: 'a' },
+      rot:   { freq: 330, taste: 's' },
+      gelb:  { freq: 262, taste: 'k' },
+      blau:  { freq: 196, taste: 'l' }
+    };
+    const MAX_LEVEL = 20;
+
+    // ===== DOM-ELEMENTE =====
+    const elemente = {
+      startenBtn: document.getElementById('starten-btn'),
+      zuruecksetzenBtn: document.getElementById('zuruecksetzen-btn'),
+      striktCheckbox: document.getElementById('strikt-modus'),
+      punktestandAnzeige: document.getElementById('punktestand'),
+      meldungAnzeige: document.getElementById('meldung')
+    };
+
+    // ===== SPIELZUSTAND =====
+    let zustand = {
+      reihe: [],
+      spielerReihe: [],
+      level: 0,
+      spielt: false,
+      strikt: false,
+      audioCtx: new (window.AudioContext || window.webkitAudioContext)(),
+      aktuelleMeldungsId: 0
+    };
+
+    // ===== HAUPTFUNKTIONEN =====
+    function initialisiereSpiel() {
+      zuruecksetzenSpiel();
+      einrichteEreignisListener();
+    }
+
+    function starteSpiel() {
+      if (zustand.spielt) return;
+
+      zustand.spielt = true;
+      zustand.strikt = elemente.striktCheckbox.checked;
+      zustand.level = 1;
+      zustand.spielerReihe = [];
+      erzeugeReihe();
+
+      aktualisierePunktestand();
+      zeigeMeldung("Beobachte die Sequenz...");
+      spieleReihe();
+    }
+
+    function zuruecksetzenSpiel() {
+      zustand.spielt = false;
+      zustand.level = 0;
+      zustand.reihe = [];
+      zustand.spielerReihe = [];
+
+      aktualisierePunktestand();
+      zeigeMeldung("Drücke Start", 0);
+    }
+
+    // ===== SPIELLOGIK =====
+    function erzeugeReihe() {
+      zustand.reihe = [];
+      for (let i = 0; i < MAX_LEVEL; i++) {
+        const zufallsFarb = Object.keys(FARBEN)[Math.floor(Math.random() * 4)];
+        zustand.reihe.push(zufallsFarb);
+      }
+    }
+
+    function spieleReihe() {
+      let i = 0;
+      const naechster = () => {
+        if (i >= zustand.level || !zustand.spielt) return;
+
+        const farb = zustand.reihe[i];
+        aktiviereFarbe(farb);
+        i++;
+
+        if (i < zustand.level) {
+          setTimeout(naechster, 800);
+        } else {
+          zustand.spielerReihe = [];
+          zeigeMeldung("Dein Zug");
+        }
+      };
+
+      setTimeout(naechster, 500);
+    }
+
+    function verarbeiteSpielerZug(farb) {
+      if (!zustand.spielt) return;
+
+      aktiviereFarbe(farb);
+      zustand.spielerReihe.push(farb);
+
+      const zugIndex = zustand.spielerReihe.length - 1;
+      if (zustand.spielerReihe[zugIndex] !== zustand.reihe[zugIndex]) {
+        behandleFalschenZug();
+        return;
+      }
+
+      if (zustand.spielerReihe.length === zustand.level) {
+        behandleLevelAbschluss();
+      }
+    }
+
+    function behandleFalschenZug() {
+      zeigeMeldung("Fehler!");
+      spieleTon(100, 'square', 0.5);
+
+      if (zustand.strikt) {
+        setTimeout(() => {
+          zuruecksetzenSpiel();
+          zeigeMeldung("Du hast verloren! (Strikter Modus)");
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          zustand.spielerReihe = [];
+          zeigeMeldung("Versuche es noch einmal");
+          spieleReihe();
+        }, 1000);
+      }
+    }
+
+    function behandleLevelAbschluss() {
+      zustand.level++;
+      zustand.spielerReihe = [];
+      aktualisierePunktestand();
+
+      if (zustand.level > MAX_LEVEL) {
+        zeigeMeldung("Du hast gewonnen! 🎉", 0);
+        zustand.spielt = false;
+        return;
+      }
+
+      zeigeMeldung("Richtig!");
+      setTimeout(() => {
+        zeigeMeldung("Nächstes Level...");
+        spieleReihe();
+      }, 1000);
+    }
+
+    // ===== HILFSFUNKTIONEN =====
+    function aktiviereFarbe(farb) {
+      const el = document.getElementById(farb);
+      el.classList.add('aktiv');
+      spieleTon(FARBEN[farb].freq);
+
+      setTimeout(() => {
+        el.classList.remove('aktiv');
+      }, 300);
+    }
+
+    function spieleTon(freq, typ = 'sine', dauer = 0.3) {
+      if (zustand.audioCtx.state === 'suspended') {
+        zustand.audioCtx.resume().then(() => {
+          _spieleTon(freq, typ, dauer);
+        });
+      } else {
+        _spieleTon(freq, typ, dauer);
+      }
+    }
+
+    function _spieleTon(freq, typ, dauer) {
+      const osc = zustand.audioCtx.createOscillator();
+      const gain = zustand.audioCtx.createGain();
+
+      osc.type = typ;
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(zustand.audioCtx.destination);
+
+      gain.gain.setValueAtTime(0.2, zustand.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.01,
+        zustand.audioCtx.currentTime + dauer
+      );
+
+      osc.start();
+      osc.stop(zustand.audioCtx.currentTime + dauer);
+    }
+
+    function aktualisierePunktestand() {
+      elemente.punktestandAnzeige.textContent = zustand.level;
+    }
+
+    function zeigeMeldung(text, dauer = 1000) {
+      const id = ++zustand.aktuelleMeldungsId;
+      elemente.meldungAnzeige.textContent = text;
+      if (dauer) {
+        setTimeout(() => {
+          if (id === zustand.aktuelleMeldungsId) {
+            elemente.meldungAnzeige.textContent = '';
+          }
+        }, dauer);
+      }
+    }
+
+    // ===== EREIGNIS-LISTENER =====
+    function einrichteEreignisListener() {
+      elemente.startenBtn.addEventListener('click', starteSpiel);
+      elemente.zuruecksetzenBtn.addEventListener('click', zuruecksetzenSpiel);
+      elemente.striktCheckbox.addEventListener('change', () => {
+        zustand.strikt = elemente.striktCheckbox.checked;
+      });
+
+      Object.keys(FARBEN).forEach(farb => {
+        document.getElementById(farb).addEventListener('click', () => {
+          verarbeiteSpielerZug(farb);
+        });
+      });
+
+      document.addEventListener('keydown', e => {
+        const taste = e.key.toLowerCase();
+        for (const [farb, daten] of Object.entries(FARBEN)) {
+          if (taste === daten.taste) {
+            verarbeiteSpielerZug(farb);
+            break;
+          }
+        }
+      });
+    }
+
+    // ===== SPIELSTART BEIM LADEN =====
+    window.addEventListener('load', initialisiereSpiel);
+  </script>
+</body>
+</html>
