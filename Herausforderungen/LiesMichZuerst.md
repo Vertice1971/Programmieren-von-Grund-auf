@@ -5,9 +5,9 @@ Lies dir zuerst diese Aufgaben und Hinweise durch und vergleiche nach dem gemein
 
 ---
 
-## 1. RATE DIE ZAHL
+## 1. ZAHL RATEN (`12ZahlRaten`)
 
-**Funktionale Beschreibung des Spiels „Rate die Zahl“**
+**Funktionale Beschreibung des Spiels „Zahl Raten“**
 
 Du wirst ein kleines Ratespiel mit folgenden Eigenschaften programmieren:
 
@@ -38,7 +38,7 @@ Du wirst ein kleines Ratespiel mit folgenden Eigenschaften programmieren:
 
 ---
 
-## 2. PAARE – MEMORY-SPIEL
+## 2. PAARE – MEMORY-SPIEL (`13VisuellesMemory`)
 
 **Funktionale Beschreibung des „Memory-Spiels“**
 
@@ -69,7 +69,7 @@ Du wirst ein kleines Ratespiel mit folgenden Eigenschaften programmieren:
 
 ---
 
-### 2 PLUS: ZUSATZAUFGABE – UNREGELMÄSSIGE VERBEN IM ENGLISCHEN
+### 2 PLUS: ZUSATZAUFGABE – UNREGELMÄSSIGE VERBEN IM ENGLISCHEN (`13bMemoryEnglisch`)
 
 **Anpassung des Memory-Spiels zum Üben unregelmäßiger Verben:**
 
@@ -95,7 +95,7 @@ Du wirst ein kleines Ratespiel mit folgenden Eigenschaften programmieren:
 
 ---
 
-### UND JETZT AUF FRANZÖSISCH!
+### UND JETZT AUF FRANZÖSISCH! (`13bMemoryFranzösisch`)
 
 **Version im Passé Composé**
 
@@ -112,20 +112,20 @@ Du wirst ein kleines Ratespiel mit folgenden Eigenschaften programmieren:
 
 ## 3. HERAUSFORDERUNGEN „REPARIERE DIE CODES MIT TITEL 99…“
 
-**Dateien:** Galgenmännchen, Klick, Simon, Panzer, Drei gewinnt
+**Dateien:** `14Galgenmännchen`, `15Klickspiel`, `16SimonSpiel`, `17PanzerSpiel`, `18DreiGewinnt`
 **Ziel:** Überprüfen, korrigieren, verbessern – nutze die KI als Verbündete!
 
 ### Einige Ideen:
 
 * **Galgenmännchen**: Animationen überprüfen (z. B. Beine).
-* **Klick**: Dynamik und Sichtbarkeit verbessern.
-* **Simon**: Fehlertoleranz überdenken.
-* **Panzer**: Oberfläche verbessern, zweiten Panzer hinzufügen, Schadensbalken.
-* **Drei gewinnt**: Interface, Farben, Animationen, Schwierigkeitsgrad.
+* **Klickspiel**: Dynamik und Sichtbarkeit verbessern.
+* **SimonSpiel**: Fehlertoleranz überdenken.
+* **PanzerSpiel**: Oberfläche verbessern, zweiten Panzer hinzufügen, Schadensbalken.
+* **DreiGewinnt**: Interface, Farben, Animationen, Schwierigkeitsgrad.
 
 ---
 
-## 4. DREI AUFGABEN AUF BASIS DES MULTIPLE-CHOICE-TESTS
+## 4. DREI AUFGABEN AUF BASIS DES MULTIPLE-CHOICE-TESTS (`19TestLiteraturRealismus`, `20TestVorlage`, `20TestMotor`, `21MehrfachTestMotor_v2`)
 
 ### Erste Aufgabe:
 
@@ -144,6 +144,7 @@ Du wirst ein kleines Ratespiel mit folgenden Eigenschaften programmieren:
 ### Dritte Aufgabe:
 
 **Fehlerrückstufung**
+
 Je nach Anzahl der Optionen:
 
 * 3 Optionen → −0,5 pro Fehler
