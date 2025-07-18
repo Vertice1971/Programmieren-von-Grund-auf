@@ -1,0 +1,233 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #3c3f58;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+#menü {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100vh;
+}
+
+.abschnitt {
+  display: none;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.menü-knopf {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  margin: 8px 0;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+}
+
+.menü-knopf:hover {
+  background-color: #0056b3;
+}
+
+.feld {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="file"],
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.zeit-eingaben > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.zeit-eingaben input[type="number"] {
+  width: 45%;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #28a745;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+}
+
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+#status {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+audio {
+  width: 100%;
+  margin: 10px 0;
+}
+
+#zugInfo,
+#ergebnis,
+#zeitgeber,
+#hinweisNächste,
+#punktestände p {
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Neue Styles für Antwortknöpfe */
+.opcion-boton {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out, filter 0.2s ease-in-out;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+}
+
+.opcion-boton:nth-child(1) {
+  background-color: #1abc9c;
+}
+
+.opcion-boton:nth-child(2) {
+  background-color: #3498db;
+}
+
+.opcion-boton:nth-child(3) {
+  background-color: #e67e22;
+}
+
+.opcion-boton:hover {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+}
+
+.opcion-boton:active,
+.opcion-boton:focus {
+  filter: brightness(1.4);
+}
+
+#zeitbalkenContainer {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 20px;
+  margin-top: 10px;
+}
+
+#zeitbalken {
+  height: 100%;
+  width: 100%;
+  background-color: #ffc107;
+  transition: width 1s linear;
+}
+
+#zugInfo.final-texto,
+#ergebnis.final-texto {
+  font-size: 2.2rem;
+  color: #ffcc00;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 1);
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.final-punkte {
+  font-size: 1.5rem;
+  color: #ffcc00;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+  font-weight: bold;
+  padding: 2px 6px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+}
+
+/* ==== Responsive Anpassungen für Mobilgeräte ==== */
+@media (max-width: 400px) {
+  .opcion-boton {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  #zeitbalkenContainer {
+    max-width: 100%;
+    height: 16px;
+  }
+
+  .zeit-eingaben > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .zeit-eingaben input[type="number"] {
+    width: 100%;
+  }
+
+  .menü-knopf {
+    font-size: 0.95rem;
+    padding: 10px 16px;
+  }
+
+  #menü h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+}
