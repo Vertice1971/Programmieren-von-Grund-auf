@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Das kommt mir bekannt vor</title>
+  <link rel="stylesheet" href="css/stil.css" />
+</head>
+<body>
+
+  <!-- HAUPTMENÜ -->
+  <div id="menü">
+    <h1>Das kommt mir bekannt vor</h1>
+    <h2 style="font-size: 0.6rem;">Thomas Hügel</h2>
+    <button class="menü-knopf" onclick="zeigeAbschnitt('spiel')">Spielen</button>
+    <button class="menü-knopf" onclick="zeigeAbschnitt('schneider')">MP3 schneiden</button>
+  </div>
+
+  <!-- SPIELABSCHNITT -->
+  <div id="spiel" class="abschnitt">
+    <h2>Welches Lied ist das?</h2>
+
+    <!-- Ordnerauswahl-Button -->
+    <div id="ordnerAuswahl" class="feld">
+      <button onclick="ordnerWählen()">Ordner mit Liedern auswählen</button>
+      <div id="anzahlLieder" style="text-align:center; margin-top: 10px;"></div>
+    </div>
+
+    <!-- Aktiver Spielbereich -->
+    <div id="spielZone" style="display:none;">
+      <p id="rundenInfo" style="text-align:center; font-weight:bold;"></p>
+      <audio id="audio" style="display: none;"></audio>
+
+      <div id="antworten" class="feld">
+        <!-- Antwortbuttons werden durch JS eingefügt -->
+      </div>
+
+      <div id="zeitgeber" style="text-align:center; font-size: 1.2rem; font-weight: bold;"></div>
+      <div id="zeitbalkenContainer">
+        <div id="zeitbalken"></div>
+      </div>
+      
+      <div id="ergebnis" style="text-align:center; font-size: 1.1rem; margin-top: 10px;"></div>
+      <div id="hinweisWeiter" style="text-align:center; margin-top: 10px;"></div>
+
+      <div id="anzeige" style="text-align:center; margin-top: 20px;">
+        <p>Runde: <span id="runde">1</span></p>
+        <div id="punktestände">
+          <!-- Punktestände der Spieler werden hier angezeigt -->
+        </div>
+      </div>
+    </div>
+
+    <br />
+    <button onclick="zurückZumMenü()">Zurück zum Menü</button>
+  </div>
+
+  <!-- MP3-SCHNEIDER-ABSCHNITT -->
+  <div id="schneider" class="abschnitt">
+    <h2>MP3-Schneider</h2>
+    <div class="feld">
+      <label for="dateiEingabe">MP3-Datei:</label>
+      <input type="file" id="dateiEingabe" accept="audio/mpeg" />
+    </div>
+    <div class="feld zeit-eingaben">
+      <div>
+        <label>Start (mm:ss):</label>
+        <input type="number" id="startMin" min="0" value="0" />
+        <span>:</span>
+        <input type="number" id="startSek" min="0" max="59" value="0" />
+      </div>
+      <div>
+        <label>Ende (mm:ss):</label>
+        <input type="number" id="endMin" min="0" value="0" />
+        <span>:</span>
+        <input type="number" id="endSek" min="0" max="59" value="0" />
+      </div>
+    </div>
+    <div class="feld">
+      <label for="ausgabeName">Ausgabename:</label>
+      <input type="text" id="ausgabeName" value="schnitt.mp3" />
+    </div>
+    <button id="schnittKnopf" disabled>Schneiden</button>
+    <div id="status"></div>
+    <br />
+    <button onclick="zurückZumMenü()">Zurück zum Menü</button>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/schneider.js"></script>
+  <script src="js/spiel.js"></script>
+  <script>
+    
+    function zeigeAbschnitt(id) {
+      document.getElementById('menü').style.display = 'none';
+      document.querySelectorAll('.abschnitt').forEach(abs => abs.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      if (id === 'schneider' && typeof starteSchneider === 'function') {
+        starteSchneider();
+      }
+    }
+
+    function zurückZumMenü() {
+      document.querySelectorAll('.abschnitt').forEach(abs => abs.style.display = 'none');
+      document.getElementById('menü').style.display = 'flex';
+
+      if (typeof zeitgeberId !== 'undefined' && zeitgeberId) clearInterval(zeitgeberId);
+      if (typeof timeoutErgebnisId !== 'undefined' && timeoutErgebnisId) clearTimeout(timeoutErgebnisId);
+
+      document.body.style.backgroundImage = '';
+      document.getElementById('ergebnis').textContent = '';
+      document.getElementById('hinweisWeiter').textContent = '';
+      document.getElementById('antworten').innerHTML = '';
+      document.getElementById('zeitgeber').textContent = '';
+      document.getElementById('punktestände').innerHTML = '';
+      document.getElementById('rundenInfo').textContent = '';
+      document.getElementById('runde').textContent = '1';
+      document.getElementById('ordnerAuswahl').style.display = 'block';
+      document.getElementById('spielZone').style.display = 'none';
+
+      verfügbareLieder = [];
+      fehlgeschlageneLieder = [];
+      verwendeteLieder.clear();
+
+      gesamtRunden = 0;
+      aktuelleRunde = 1;
+      spieler = [];
+      aktuellerSpielerIndex = 0;
+
+      document.getElementById('rundenInfo').classList.remove('endtext');
+      document.getElementById('ergebnis').classList.remove('endtext');
+      document.getElementById('runde').parentElement.classList.remove('endstand');
+    }
+  </script>
+
+</body>
+</html>
