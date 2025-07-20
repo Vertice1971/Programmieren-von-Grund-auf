@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realismus in der deutschen Literatur – Klasse 10</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; background-color: #f5f8ff; }
+        .kopf-info { font-size: 0.9em; color: #555; margin-bottom: 5px; line-height: 1.2; }
+        .frage-container { display: none; padding: 20px; border: 1px solid #ccc; border-radius: 10px; max-width: 600px; margin: 20px auto; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .option { display: block; padding: 10px; margin: 10px 0; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; transition: background 0.3s, transform 0.2s; }
+        .option:hover { background: #e0ebff; transform: scale(1.05); }
+        .correct { background: #c8e6c9; border-color: green; }
+        .incorrect { background: #ffcdd2; border-color: red; }
+        #start-btn, #neustart-btn, #weiter-btn { margin-top: 20px; padding: 10px 15px; background: #007BFF; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        #neustart-btn { background: #28a745; }
+        #weiter-btn { position: fixed; right: 20px; top: 30%; display: none; }
+        #info-bereich { margin-top: 20px; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <div class="kopf-info">
+        <div>Max Mustermann</div>
+        <div>Gymnasium Musterstadt</div>
+    </div>
+    <h1>Quiz: Realismus in der deutschen Literatur (Klasse 10)</h1>
+    <div id="info-bereich"></div>
+    <button id="start-btn">Quiz starten</button>
+    <div id="frage-container" class="frage-container"></div>
+    <button id="weiter-btn">Weiter</button>
+    <button id="neustart-btn" style="display:none;">Neu starten</button>
+
+    <script>
+        const daten = {
+            fragen: [
+                {
+                    text: "Welche literarische Strömung entstand im 19. Jahrhundert als Reaktion auf die Folgen der Industriellen Revolution und den wissenschaftlichen Fortschritt?",
+                    optionen: { a: "Realismus", b: "Romantik", c: "Moderne" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Methode wendeten die realistischen Autoren an, um Gesellschaft zu beobachten und zu beschreiben?",
+                    optionen: { a: "Wissenschaftliche Methode", b: "Künstlerische Intuition", c: "Philosophische Analyse" },
+                    antwort: "a"
+                },
+                {
+                    text: "Was ist das Hauptmerkmal der Erzählweise im literarischen Realismus?",
+                    optionen: { a: "Detaillierte und objektive Beschreibung der Wirklichkeit", b: "Fragmentierte und chaotische Struktur", c: "Übermäßiger Einsatz fantastischer Elemente" },
+                    antwort: "a"
+                },
+                {
+                    text: "Wie werden Figuren in realistischen Romanen meist dargestellt?",
+                    optionen: { a: "Als gewöhnliche Menschen", b: "Als mythische Helden", c: "Als legendäre Geschichtsfiguren" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Funktion haben Nebenfiguren in der realistischen Erzählung oft?",
+                    optionen: { a: "Satire oder Gesellschaftskritik", b: "Nur schmückendes Beiwerk ohne Bedeutung", c: "Vertretung romantischer Ideale" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Erzähltechnik dominiert im realistischen Roman?",
+                    optionen: { a: "Allwissender Erzähler in dritter Person", b: "Ich-Erzähler", c: "Innerer Monolog" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Bedeutung hat die detaillierte Beschreibung im Realismus?",
+                    optionen: { a: "Erzeugung absoluter Glaubwürdigkeit der Wirklichkeit", b: "Schaffung einer traumhaften und fantastischen Atmosphäre", c: "Aufbrechen der zeitlichen Linearität der Erzählung" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Thema tritt in realistischen Romanen häufig auf?",
+                    optionen: { a: "Antiklerikalismus", b: "Naturromantik", c: "Suche nach Übernatürlichem" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher soziale Konflikt wird in realistischen Romanen häufig behandelt?",
+                    optionen: { a: "Konflikt zwischen Tradition und Fortschritt", b: "Kampf zwischen Gut und Böse", c: "Konflikt zwischen Königreichen" },
+                    antwort: "a"
+                },
+                {
+                    text: "Was versteht man unter einem Thesenroman im Realismus?",
+                    optionen: { a: "Ein Werk, das eine ideologische oder soziale Position darlegt", b: "Ein Roman ohne soziale Botschaft rein zur Unterhaltung", c: "Eine Erzählung ohne definierte Struktur" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher deutsche Autor gilt als einer der Hauptvertreter des Realismus?",
+                    optionen: { a: "Theodor Fontane", b: "Johann Wolfgang von Goethe", c: "Thomas Mann" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Werk von Theodor Fontane gilt als Thesenroman, das politische und gesellschaftliche Themen behandelt?",
+                    optionen: { a: "Der Stechlin", b: "Effi Briest", c: "Frau Jenny Treibel" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher weitere deutschsprachige Autor neben Fontane ist im Realismus bedeutend?",
+                    optionen: { a: "Gottfried Keller", b: "Leopold von Sacher-Masoch", c: "Franz Kafka" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Werk von Gottfried Keller fokussiert sich auf psychologische und sentimentale Aspekte?",
+                    optionen: { a: "Der grüne Heinrich", b: "Die Leute von Seldwyla", c: "Romeo und Julia auf dem Dorfe" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher innere Konflikt wird in 'Der grüne Heinrich' thematisiert?",
+                    optionen: { a: "Spannung zwischen künstlerischer Berufung und gesellschaftlichen Erwartungen", b: "Familienfehden", c: "Kampf zwischen Gut und Böse" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher französische Autor beeinflusste die realistische Sicht auf die menschliche Verfassung durch sein Werk 'La Comédie humaine'?",
+                    optionen: { a: "Honoré de Balzac", b: "Gustave Flaubert", c: "Victor Hugo" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher Roman von Gustave Flaubert diente Fontanes 'Effi Briest' als Vorbild?",
+                    optionen: { a: "Madame Bovary", b: "Nana", c: "Salammbô" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Werk von Charles Dickens wird oft als Beispiel für Realismus in England genannt?",
+                    optionen: { a: "David Copperfield", b: "Oliver Twist", c: "Great Expectations" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher Roman von Fjodor Dostojewski wird mit realistischen Tendenzen in Russland in Verbindung gebracht?",
+                    optionen: { a: "Schuld und Sühne", b: "Die Brüder Karamasow", c: "Der Idiot" },
+                    antwort: "a"
+                },
+                {
+                    text: "Was ist der Hauptunterschied zwischen Realismus und Naturalismus in der Literatur?",
+                    optionen: { a: "Grad der Anwendung der wissenschaftlichen Methode", b: "Vorhandensein von Nebenfiguren", c: "Verwendung von Dialogen" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche literarische Strömung geht aus dem Realismus hervor und führt die wissenschaftliche Methode auf die Spitze?",
+                    optionen: { a: "Naturalismus", b: "Moderne", c: "Symbolismus" },
+                    antwort: "a"
+                },
+                {
+                    text: "Wovon hängt laut Naturalismus das menschliche Verhalten hauptsächlich ab?",
+                    optionen: { a: "Soziale Umwelt und biologische Eigenschaften", b: "Individueller Wille", c: "Göttliche Vorsehung" },
+                    antwort: "a"
+                },
+                {
+                    text: "Wie sind die Figuren in naturalistischen Werken typischerweise charakterisiert?",
+                    optionen: { a: "Sie sind durch Umwelt und Biologie determiniert", b: "Sie sind idealisiert und perfekt", c: "Sie zeichnen sich durch Heldentum aus" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Absicht verfolgen naturalistische Romane gegenüber der bürgerlichen Gesellschaft?",
+                    optionen: { a: "Aufdecken von Ungerechtigkeiten und Anstoßen von Reformen", b: "Lobpreisung ihrer Tugenden", c: "Romantisierung ihres Lebensstils" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche formale Eigenschaft kennzeichnet naturalistische Romane?",
+                    optionen: { a: "Objektive und detaillierte Darstellung der Wirklichkeit", b: "Fragmentierte Erzählstruktur", c: "Übermäßig poetische Sprache" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche der folgenden Eigenschaften ist kein Kennzeichen des Naturalismus?",
+                    optionen: { a: "Hervorheben negativer Aspekte der Gesellschaft", b: "Idealiserung der Figuren", c: "Verwendung eines wissenschaftlichen Lexikons" },
+                    antwort: "b"
+                },
+                {
+                    text: "Welche Erzählung von Arno Holz und Johannes Schlaf gilt als eines der ersten naturalistischen Werke in Deutschland?",
+                    optionen: { a: "Papa Hamlet", b: "Vor Sonnenaufgang", c: "Effi Briest" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Werk von Émile Zola gilt als Paradebeispiel des französischen Naturalismus?",
+                    optionen: { a: "Germinal", b: "Madame Bovary", c: "Le Père Goriot" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Element verstärkt die Objektivität in der realistischen Erzählung?",
+                    optionen: { a: "Sorgfältige Beobachtung des Alltagslebens", b: "Übertriebene Metaphern", c: "Ich-Erzähler" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches Stilmittel wird im Realismus eingesetzt, um der Sprache Ausdruckskraft zu verleihen?",
+                    optionen: { a: "Hyperbaton", b: "Alliteration", c: "Onomatopoesie" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Rolle spielt die wissenschaftliche Methode in der realistischen Erzählung?",
+                    optionen: { a: "Sie verleiht Objektivität und Glaubwürdigkeit", b: "Sie führt fantastische Elemente ein", c: "Sie zerstört narrative Kohärenz" },
+                    antwort: "a"
+                },
+                {
+                    text: "In welchem Zeitraum entwickelte sich hauptsächlich der realistische Roman?",
+                    optionen: { a: "Zwischen 1840 und 1890", b: "Im 17. Jahrhundert", c: "Im 20. Jahrhundert" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche gesellschaftliche Perspektive wird im realistischen Roman meist eingenommen?",
+                    optionen: { a: "Bürgerliche Perspektive mit innerer Kritik", b: "Revolutionärer Idealismus", c: "Ländliche Idylle" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Funktion erfüllt der auktoriale Erzähler im Realismus?",
+                    optionen: { a: "Er offenbart Gedanken und Gefühle verschiedener Figuren", b: "Er bleibt neutral und unbeteiligt", c: "Er ist die Hauptfigur" },
+                    antwort: "a"
+                },
+                {
+                    text: "Wie wird Gesellschaftskritik im realistischen Roman erreicht?",
+                    optionen: { a: "Durch detaillierte Beschreibung des Alltags und seiner Widersprüche", b: "Durch fantastische und übernatürliche Episoden", c: "Durch multiple und konflikthafte Erzähler" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Erzähltechnik erlaubt es dem Autor, persönliche Wertungen im realistischen Roman einzufügen?",
+                    optionen: { a: "Der auktoriale Erzähler", b: "Der Ich-Erzähler", c: "Der innere Monolog" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher der folgenden Autoren wird traditionell nicht mit dem Realismus in Verbindung gebracht?",
+                    optionen: { a: "Thomas Mann", b: "Theodor Fontane", c: "Gustave Flaubert" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Eigenschaft teilen Realismus und Naturalismus, um 'absolute Glaubwürdigkeit' zu erreichen?",
+                    optionen: { a: "Objektive und detaillierte Beobachtung der Wirklichkeit", b: "Einsatz fantastischer und symbolischer Elemente", c: "Hervorhebung heroischer Merkmale" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welcher soziale Aspekt wird in realistischen Romanen häufig kritisiert?",
+                    optionen: { a: "Widersprüche und Mängel des Bürgertums", b: "Verherrlichung der Monarchie", c: "Idealisierung des Landlebens" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches charakteristische Merkmal des Naturalismus betont, dass der Mensch von seinem Umfeld bestimmt ist?",
+                    optionen: { a: "Einfluss der sozialen Umwelt und biologischer Eigenschaften", b: "Freier Wille des Individuums", c: "Göttliche Vorherbestimmung" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Bedeutung haben detaillierte Beschreibungen in realistischen und naturalistischen Werken?",
+                    optionen: { a: "Sie ermöglichen eine fast fotografische Darstellung der Wirklichkeit", b: "Sie schaffen eine Atmosphäre von Geheimnis und Mehrdeutigkeit", c: "Sie betonen die Subjektivität des Erzählers" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches sprachliche Mittel wird im Realismus verwendet, um trotz klarer Struktur Ausdruck zu verleihen?",
+                    optionen: { a: "Metapher", b: "Vergleich", c: "Anspielung" },
+                    antwort: "a"
+                },
+                {
+                    text: "Worin unterscheidet sich die erzählerische Perspektive in 'Der grüne Heinrich' von herkömmlichen Thesenromanen?",
+                    optionen: { a: "Sie konzentriert sich stärker auf psychologische und sentimentale Konflikte", b: "Sie enthält übertriebene Gesellschaftsbeschreibungen", c: "Sie verwendet einen strikt auktorialen Erzähler ohne persönliche Nuancen" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Bedeutung hatte Honoré de Balzac für die realistische Literatur?",
+                    optionen: { a: "Sein Werk 'La Comédie humaine' inspirierte die Sicht auf die menschliche Verfassung", b: "Er führte fantastische Elemente ein", c: "Er vertrat romantischen Idealismus" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Rolle spielt der wissenschaftliche Fortschritt in der Entwicklung des Realismus?",
+                    optionen: { a: "Er regte die Anwendung wissenschaftlicher Methoden in der Gesellschaftsbeobachtung an", b: "Er förderte die Schaffung imaginärer Welten", c: "Er rückte detaillierte Beschreibungen in den Hintergrund" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welches erzählerische Merkmal unterscheidet den Naturalismus in der Literatur?",
+                    optionen: { a: "Deterministische Sicht auf den Menschen", b: "Verherrlichung des romantischen Helden", c: "Überwiegende Nutzung des inneren Monologs" },
+                    antwort: "a"
+                },
+                {
+                    text: "Was ist das Ziel der Gesellschaftskritik im Naturalismus?",
+                    optionen: { a: "Anstoßen von gesellschaftlichen Veränderungen und Reformen", b: "Unterhaltung des Lesers mit Abenteuern", c: "Rettung kultureller Traditionen" },
+                    antwort: "a"
+                },
+                {
+                    text: "Welche Rolle spielt das wissenschaftliche Vokabular in naturalistischen Werken?",
+                    optionen: { a: "Es unterstreicht eine rigorose Analyse der Wirklichkeit", b: "Es verschleiert den sozialen Hintergrund der Handlung", c: "Es schafft Mehrdeutigkeit in der Interpretation" },
+                    antwort: "a"
+                }
+            ]
+        };
+
+        let fragen = daten.fragen;
+        let ausgewaehlteFragen = [];
+        let aktuelleFrage = 0;
+        let richtige = 0;
+
+        const infoBereich = document.getElementById('info-bereich');
+        const startBtn = document.getElementById('start-btn');
+        const frageContainer = document.getElementById('frage-container');
+        const weiterBtn = document.getElementById('weiter-btn');
+        const neustartBtn = document.getElementById('neustart-btn');
+
+        function mischen(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            infoBereich.innerHTML = `<p>Der Test enthält <strong>${fragen.length}</strong> Fragen.</p>`;
+            startBtn.style.display = 'inline-block';
+        });
+
+        startBtn.addEventListener('click', () => {
+            let num = prompt(`Wie viele Fragen möchten Sie spielen? (1–${fragen.length})`, fragen.length);
+            num = parseInt(num);
+            if (isNaN(num) || num < 1 || num > fragen.length) {
+                alert('Ungültige Zahl. Es werden alle Fragen verwendet.');
+                num = fragen.length;
+            }
+            ausgewaehlteFragen = mischen([...fragen]).slice(0, num);
+            startBtn.style.display = 'none';
+            infoBereich.innerHTML = '';
+            zeigeFrage();
+        });
+
+        function zeigeFrage() {
+            if (aktuelleFrage < ausgewaehlteFragen.length) {
+                frageContainer.innerHTML = '';
+                frageContainer.style.display = 'block';
+                weiterBtn.style.display = 'none';
+
+                const p = ausgewaehlteFragen[aktuelleFrage];
+                const h2 = document.createElement('h2');
+                h2.textContent = p.text;
+                frageContainer.appendChild(h2);
+
+                mischen(Object.entries(p.optionen).map(([k,v]) => ({ key: k, text: v })))
+                    .forEach(op => {
+                        const div = document.createElement('div');
+                        div.className = 'option';
+                        div.textContent = op.text;
+                        div.dataset.val = op.key;
+                        div.addEventListener('click', () => pruefen(div, p.antwort));
+                        frageContainer.appendChild(div);
+                    });
+            } else {
+                frageContainer.innerHTML = `<h2>Test beendet!</h2><p>Sie haben ${richtige} von ${ausgewaehlteFragen.length} richtig beantwortet.</p>`;
+                weiterBtn.style.display = 'none';
+                neustartBtn.style.display = 'inline-block';
+            }
+        }
+
+        function pruefen(elem, resp) {
+            document.querySelectorAll('.option').forEach(o => o.style.pointerEvents = 'none');
+            if (elem.dataset.val === resp) {
+                elem.classList.add('correct');
+                richtige++;
+            } else {
+                elem.classList.add('incorrect');
+                const korrekt = document.querySelector(`.option[data-val='${resp}']`);
+                if (korrekt) korrekt.classList.add('correct');
+            }
+            weiterBtn.style.display = 'inline-block';
+        }
+
+        weiterBtn.addEventListener('click', () => {
+            aktuelleFrage++;
+            zeigeFrage();
+        });
+        neustartBtn.addEventListener('click', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>

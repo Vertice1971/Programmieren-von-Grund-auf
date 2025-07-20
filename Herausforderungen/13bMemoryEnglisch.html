@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory: Unregelmäßige Verben</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #004d40;
+      margin-bottom: 20px;
+    }
+    #konfiguration {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label, select, input, button {
+      font-size: 16px;
+      margin: 5px;
+    }
+    input[type="text"] {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 200px;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      background: #00796b;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background: #004d40; }
+    #spielbereich {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 20px;
+    }
+    .karte {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      perspective: 600px;
+    }
+    .innen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      transition: transform 0.4s;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .karte.gekippt .innen { transform: rotateY(180deg); }
+    .vorderseite, .rückseite {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 5px;
+      text-align: center;
+    }
+    .rückseite {
+      background: #00796b;
+      color: #fff;
+    }
+    .vorderseite {
+      background: #fff;
+      color: #000;
+      transform: rotateY(180deg);
+    }
+    .karte.getroffen .vorderseite {
+      background: #388e3c;
+      color: #fff;
+    }
+    .karte.getroffen { pointer-events: none; }
+    #status {
+      display: none;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #ergebnis {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    #neustarten {
+      display: none;
+      background: #ff9800;
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory: Unregelmäßige Verben</h1>
+
+  <div id="konfiguration">
+    <label for="spieler">Spieler:</label>
+    <select id="spieler">
+      <option value="1">1</option>
+      <option value="2">2</option>
+    </select>
+    <br>
+    <div id="namen-konfiguration">
+      <label for="name1">Name Spieler 1:</label>
+      <input type="text" id="name1" placeholder="Spieler 1">
+      <br>
+      <label for="name2" id="label2">Name Spieler 2:</label>
+      <input type="text" id="name2" placeholder="Spieler 2">
+    </div>
+    <br>
+    <label for="paare">Anzahl Paare (10–20):</label>
+    <select id="paare">
+      <script>
+        for (let i = 10; i <= 20; i++) {
+          document.write(`<option value="${i}">${i}</option>`);
+        }
+      </script>
+    </select>
+    <br>
+    <button id="start-btn">Spiel starten</button>
+  </div>
+
+  <div id="status"></div>
+  <div id="spielbereich"></div>
+  <div id="ergebnis"></div>
+  <button id="neustarten">Zurück zum Hauptmenü</button>
+
+  <script>
+    // Liste von 20 häufigen unregelmäßigen Verben
+    const verben = [
+      {infinitiv: "be", particip: "been",    übersetzung: "sein/bleiben"},
+      {infinitiv: "begin", particip: "begun",  übersetzung: "beginnen"},
+      {infinitiv: "break", particip: "broken", übersetzung: "brechen"},
+      {infinitiv: "come", particip: "come",    übersetzung: "kommen"},
+      {infinitiv: "do", particip: "done",     übersetzung: "tun"},
+      {infinitiv: "drink", particip: "drunk",   übersetzung: "trinken"},
+      {infinitiv: "eat", particip: "eaten",   übersetzung: "essen"},
+      {infinitiv: "go", particip: "gone",    übersetzung: "gehen"},
+      {infinitiv: "know", particip: "known",   übersetzung: "wissen"},
+      {infinitiv: "see", particip: "seen",    übersetzung: "sehen"},
+      {infinitiv: "take", particip: "taken",   übersetzung: "nehmen"},
+      {infinitiv: "think", particip: "thought", übersetzung: "denken"},
+      {infinitiv: "write", particip: "written", übersetzung: "schreiben"},
+      {infinitiv: "give", particip: "given",   übersetzung: "geben"},
+      {infinitiv: "find", particip: "found",   übersetzung: "finden"},
+      {infinitiv: "get", particip: "got",     übersetzung: "bekommen"},
+      {infinitiv: "make", particip: "made",    übersetzung: "machen"},
+      {infinitiv: "put", particip: "put",     übersetzung: "legen"},
+      {infinitiv: "run", particip: "run",     übersetzung: "laufen"},
+      {infinitiv: "speak", particip: "spoken", übersetzung: "sprechen"}
+    ];
+
+    let karten = [], gekippt = [], sperre = false;
+    let punkte = [0, 0], aktuellerSpieler = 0;
+    let anzahlSpieler = 1, anzahlPaare = 10;
+    let spielNamen = ["Spieler 1", "Spieler 2"];
+    let spielAktiv = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const spielerEl  = document.getElementById('spieler');
+      const name1El    = document.getElementById('name1');
+      const name2El    = document.getElementById('name2');
+      const label2El   = document.getElementById('label2');
+      const startBtn   = document.getElementById('start-btn');
+      const restartBtn = document.getElementById('neustarten');
+
+      function namenAnzeigen() {
+        if (spielerEl.value === '1') {
+          label2El.style.display = 'none';
+          name2El.style.display  = 'none';
+        } else {
+          label2El.style.display = 'inline-block';
+          name2El.style.display  = 'inline-block';
+        }
+      }
+      spielerEl.addEventListener('change', namenAnzeigen);
+      namenAnzeigen();
+
+      startBtn.addEventListener('click', () => {
+        const n1 = name1El.value.trim();
+        const n2 = name2El.value.trim();
+        if (!n1) return alert('Bitte Name für Spieler 1 eingeben');
+        if (spielerEl.value === '2' && !n2) return alert('Bitte Name für Spieler 2 eingeben');
+        spielNamen[0] = n1;
+        spielNamen[1] = n2 || 'Spieler 2';
+        spielStarten();
+      });
+
+      restartBtn.addEventListener('click', zurückZumMenü);
+    });
+
+    function spielStarten() {
+      anzahlSpieler = +document.getElementById("spieler").value;
+      anzahlPaare   = +document.getElementById("paare").value;
+      spielAktiv    = true;
+
+      document.getElementById("konfiguration").style.display  = "none";
+      document.getElementById("status").style.display         = "block";
+      document.getElementById("spielbereich").innerHTML       = "";
+      document.getElementById("ergebnis").textContent         = "";
+      document.getElementById("neustarten").style.display     = "none";
+
+      karten = [];
+      gekippt = [];
+      sperre = false;
+      punkte = [0, 0];
+      aktuellerSpieler = 0;
+
+      verben.slice(0, anzahlPaare).forEach(v => {
+        karten.push({ text: `${v.infinitiv} - ${v.übersetzung}`, id: v.infinitiv });
+        karten.push({ text: v.particip, id: v.infinitiv });
+      });
+      mischen(karten);
+
+      const spielfeld = document.getElementById("spielbereich");
+      karten.forEach(karte => {
+        const el = document.createElement("div");
+        el.className = "karte";
+        el.dataset.id = karte.id;
+        el.innerHTML = `
+          <div class="innen">
+            <div class="vorderseite">${karte.text}</div>
+            <div class="rückseite"></div>
+          </div>`;
+        el.addEventListener("click", aufKarteKlick);
+        spielfeld.appendChild(el);
+      });
+
+      statusAktualisieren();
+    }
+
+    function statusAktualisieren() {
+      const s = document.getElementById("status");
+      if (anzahlSpieler === 1) {
+        s.textContent = `${spielNamen[0]}: ${punkte[0]} Paare gefunden`;
+      } else {
+        s.textContent = `${spielNamen[0]}: ${punkte[0]} | ${spielNamen[1]}: ${punkte[1]} | Zug: ${spielNamen[aktuellerSpieler]}`;
+      }
+    }
+
+    function piep(freq) {
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = freq;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.2);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime+0.2);
+    }
+
+    function aufKarteKlick(e) {
+      if (!spielAktiv || sperre) return;
+      const karte = e.currentTarget;
+      if (karte.classList.contains("gekippt") || karte.classList.contains("getroffen")) return;
+
+      karte.classList.add("gekippt");
+      gekippt.push(karte);
+
+      if (gekippt.length === 2) {
+        sperre = true;
+        const [a, b] = gekippt;
+        if (a.dataset.id === b.dataset.id) {
+          a.classList.add("getroffen");
+          b.classList.add("getroffen");
+          piep(800);
+          punkte[aktuellerSpieler]++;
+        } else {
+          piep(200);
+          setTimeout(() => {
+            a.classList.remove("gekippt");
+            b.classList.remove("gekippt");
+          }, 1000);
+          if (anzahlSpieler === 2) aktuellerSpieler = 1 - aktuellerSpieler;
+        }
+        setTimeout(() => {
+          gekippt = [];
+          sperre = false;
+          statusAktualisieren();
+          if (document.querySelectorAll(".getroffen").length === karten.length) {
+            spielBeenden();
+          }
+        }, 1100);
+      }
+    }
+
+    function spielBeenden() {
+      spielAktiv = false;
+      const f = document.getElementById("ergebnis");
+      if (anzahlSpieler === 1) {
+        f.textContent = `Spiel beendet! Du hast ${punkte[0]} Paare gefunden.`;
+      } else {
+        f.textContent = punkte[0] > punkte[1]
+          ? `Gewonnen: ${spielNamen[0]}!`
+          : punkte[1] > punkte[0]
+            ? `Gewonnen: ${spielNamen[1]}!`
+            : "Unentschieden!";
+      }
+      document.getElementById("neustarten").style.display = "inline-block";
+    }
+
+    function zurückZumMenü() {
+      document.getElementById("spielbereich").innerHTML   = "";
+      document.getElementById("status").style.display     = "none";
+      document.getElementById("ergebnis").textContent     = "";
+      document.getElementById("neustarten").style.display = "none";
+      document.getElementById("konfiguration").style.display = "block";
+      spielAktiv = false;
+    }
+
+    function mischen(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+  </script>
+
+  <!-- Autor: Thomas Hills | tomcue@iesjuandelacierva.com -->
+</body>
+</html>

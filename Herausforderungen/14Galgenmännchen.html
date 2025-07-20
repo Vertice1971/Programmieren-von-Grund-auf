@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verbessertes Galgenmännchen-Spiel</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: #333;
+    }
+    button, .kategorie-option, .taste { outline: none; }
+
+    .container {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; padding: 20px;
+    }
+
+    .menue {
+      width: 100%; max-width: 600px; background: white;
+      border-radius: 10px; padding: 25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center;
+      margin-bottom: 20px;
+    }
+    .menue h1 { margin-bottom: 10px; }
+    .kategorie-option {
+      background: #f8f9fa; border: 2px solid #e9ecef;
+      border-radius: 8px; padding: 15px; margin: 10px 0;
+      cursor: pointer; transition: all .2s;
+    }
+    .kategorie-option.ausgewählt {
+      border-color: #3498db; background: #e3f2fd;
+      transform: scale(1.02);
+      box-shadow: 0 4px 8px rgba(52,152,219,0.3);
+    }
+    .kategorie-beschreibung {
+      font-size: .9em; color: #666; text-align: left; margin-top: 8px;
+    }
+    .btn {
+      background: #3498db; color: white; border: none;
+      padding: 12px 20px; border-radius: 6px; cursor: pointer;
+      font-size: 1em; transition: all .2s; margin-top: 10px;
+    }
+    .btn-sekundaer { background: #95a5a6; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { background: #2980b9; }
+
+    .spiel-container {
+      width: 100%; max-width: 600px; background: white;
+      border-radius: 10px; padding: 25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1); display: none;
+    }
+    .spiel-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .spiel-info { font-size: 1.2em; }
+    .versuche { font-weight: bold; color: #e74c3c; }
+
+    .galgen-container {
+      position: relative; width: 200px; height: 200px; margin: 0 auto 20px;
+    }
+    .galgen-teil {
+      position: absolute; background: #2c3e50; display: none;
+    }
+    #balken, #pfosten, #querbalken { display: block; }
+    #balken { width:100px; height:10px; background:#8b4513; left:50px; top:190px; }
+    #pfosten { width:10px; height:200px; background:#8b4513; left:50px; top:0; }
+    #querbalken { width:80px; height:10px; background:#8b4513; left:60px; top:0; }
+
+    #seil     { width:4px;  height:30px; background:#8b4513; left:130px; top:10px; }
+    #kopf     { width:40px; height:40px; border:4px solid #2c3e50; border-radius:50%; left:110px; top:40px; }
+    #koerper  { width:4px;  height:60px; background:#2c3e50; left:130px; top:80px; }
+    #linker-arm { width:30px; height:4px; background:#2c3e50; left:100px; top:100px; transform: rotate(30deg); }
+    #rechter-arm{ width:30px; height:4px; background:#2c3e50; left:134px; top:100px; transform: rotate(-30deg); }
+    #linkes-bein { width:30px; height:4px; background:#2c3e50; left:105px; top:140px; transform: rotate(-45deg); }
+    #rechtes-bein{ width:30px; height:4px; background:#2c3e50; left:130px; top:140px; transform: rotate(45deg); }
+
+    .wort-anzeige {
+      font-size:2em; letter-spacing:.5em; margin:20px 0;
+      min-height:50px; font-weight:bold; color:#2c3e50;
+    }
+    .tastatur {
+      display:grid; grid-template-columns:repeat(7,1fr); gap:8px;
+      margin:20px auto; max-width:500px;
+    }
+    .taste {
+      background:#f8f9fa; border:2px solid #e9ecef; border-radius:6px;
+      padding:10px; font-size:1.2em; cursor:pointer; transition:all .2s;
+      user-select:none;
+    }
+    .taste.genutzt { background:#bdc3c7; color:#fff; pointer-events:none; }
+    .taste.richtig { background:#27ae60; color:white; }
+    .taste.falsch   { background:#c0392b; color:white; }
+    .taste:hover:not(.genutzt) { background:#e9ecef; }
+    .taste:focus { outline:2px solid #3498db; outline-offset:2px; }
+
+    .nachricht {
+      font-size:1.2em; margin:10px 0; min-height:24px; font-weight:bold;
+    }
+    .gewinn-nachricht  { color:#27ae60; }
+    .verlust-nachricht { color:#c0392b; }
+
+    @media(max-width:600px){
+      .tastatur{ grid-template-columns:repeat(5,1fr); }
+      .galgen-container{ width:150px; height:150px; }
+      .wort-anzeige{ font-size:1.5em; letter-spacing:.3em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="menue" id="menue">
+      <h1>GALGENMÄNNCHEN-SPIEL</h1>
+      <h2>Wähle eine Kategorie</h2>
+      <div class="kategorie-option ausgewählt" data-kategorie="alle" tabindex="0">
+        <strong>Alle Wörter</strong>
+        <div class="kategorie-beschreibung">Substantive, Adjektive und Verben.</div>
+      </div>
+      <div class="kategorie-option" data-kategorie="substantive" tabindex="0">
+        <strong>Nur Substantive</strong>
+        <div class="kategorie-beschreibung">Wörter wie „Haus“, „Baum“.</div>
+      </div>
+      <div class="kategorie-option" data-kategorie="adjektive" tabindex="0">
+        <strong>Nur Adjektive</strong>
+        <div class="kategorie-beschreibung">Wörter wie „schnell“, „weich“.</div>
+      </div>
+      <div class="kategorie-option" data-kategorie="verben" tabindex="0">
+        <strong>Nur Verben</strong>
+        <div class="kategorie-beschreibung">Infinitive wie „laufen“, „lesen“.</div>
+      </div>
+      <button class="btn" id="start-btn">Spiel Starten</button>
+    </div>
+
+    <div class="spiel-container" id="spiel-container">
+      <div class="spiel-header">
+        <div class="spiel-info">
+          Verbleibende Versuche:
+          <span class="versuche" id="versuche"></span>
+        </div>
+        <button class="btn btn-sekundaer" id="hauptmenue-btn">Hauptmenü</button>
+      </div>
+      <div class="galgen-container" aria-label="Galgenzeichnung">
+        <div id="balken" class="galgen-teil"></div>
+        <div id="pfosten" class="galgen-teil"></div>
+        <div id="querbalken" class="galgen-teil"></div>
+        <div id="seil" class="galgen-teil"></div>
+        <div id="kopf" class="galgen-teil"></div>
+        <div id="koerper" class="galgen-teil"></div>
+        <div id="linker-arm" class="galgen-teil"></div>
+        <div id="rechter-arm" class="galgen-teil"></div>
+        <div id="linkes-bein" class="galgen-teil"></div>
+        <div id="rechtes-bein" class="galgen-teil"></div>
+      </div>
+      <div class="wort-anzeige" id="wort-anzeige"></div>
+      <div class="tastatur" id="tastatur"></div>
+      <div class="nachricht" id="nachricht"></div>
+      <button class="btn" id="neustart-btn">Neu starten</button>
+    </div>
+  </div>
+
+  <script>
+    const normalisiereString = str =>
+      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+    const wortWörterbuch = {
+      alle: ["casa","perro","feliz","correr","montaña","libro","rápido","volar"],
+      substantive: ["casa","perro","gato","árbol","río","mar","sol","luna"],
+      adjektive: ["rápido","lento","grande","pequeño","fuerte","blando"],
+      verben: ["correr","saltar","leer","volar","nadar","bailar"]
+    };
+
+    let ursprungsWort, normalisiertesWort;
+    let errateneBuchstaben, falscheVersuche, spielAktiv, aktuelleKategorie;
+    const versucheElt    = document.getElementById('versuche');
+    const wortAnzeige    = document.getElementById('wort-anzeige');
+    const tastatur       = document.getElementById('tastatur');
+    const nachrichtenElt = document.getElementById('nachricht');
+    const menue          = document.getElementById('menue');
+    const spielContainer = document.getElementById('spiel-container');
+    const startBtn       = document.getElementById('start-btn');
+    const neustartBtn    = document.getElementById('neustart-btn');
+    const hauptmenueBtn  = document.getElementById('hauptmenue-btn');
+    const kategorien     = document.querySelectorAll('.kategorie-option');
+    const henkerTeile    = Array.from(document.querySelectorAll('.galgen-teil'))
+      .filter(el => !['balken','pfosten','querbalken','seil'].includes(el.id));
+    const maxVersuche    = henkerTeile.length;
+
+    kategorien.forEach(opt => {
+      opt.addEventListener('click', ()=>waehleKategorie(opt));
+      opt.addEventListener('keydown', e => { if(e.key==='Enter') waehleKategorie(opt); });
+    });
+    function waehleKategorie(opt){
+      kategorien.forEach(o=>o.classList.remove('ausgewählt'));
+      opt.classList.add('ausgewählt');
+      aktuelleKategorie = opt.dataset.kategorie;
+    }
+
+    startBtn.addEventListener('click', starteSpiel);
+    hauptmenueBtn.addEventListener('click', ()=>{
+      zuruecksetzen();
+      spielContainer.style.display = 'none';
+      menue.style.display = 'block';
+    });
+    neustartBtn.addEventListener('click', starteSpiel);
+
+    function starteSpiel(){
+      nachrichtenElt.classList.remove('gewinn-nachricht','verlust-nachricht');
+      errateneBuchstaben = [];
+      falscheVersuche    = 0;
+      spielAktiv         = true;
+      versucheElt.textContent = maxVersuche;
+      const liste = wortWörterbuch[aktuelleKategorie] || wortWörterbuch.alle;
+      ursprungsWort   = liste[Math.floor(Math.random()*liste.length)];
+      normalisiertesWort = normalisiereString(ursprungsWort);
+      henkerTeile.forEach(p=>p.style.display='none');
+      menue.style.display    = 'none';
+      spielContainer.style.display = 'block';
+      aktualisiereWortAnzeige();
+      erstelleTastatur();
+    }
+
+    function erstelleTastatur(){
+      tastatur.innerHTML = '';
+      'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').forEach(letter=>{
+        const btn = document.createElement('button');
+        btn.className = 'taste';
+        btn.textContent = letter;
+        btn.setAttribute('aria-label', 'Buchstabe ' + letter);
+        btn.addEventListener('click', ()=>behandleRate(letter, btn));
+        tastatur.appendChild(btn);
+      });
+    }
+
+    function behandleRate(letter, tasteEl){
+      if(!spielAktiv) return;
+      const normLetter = normalisiereString(letter);
+      if(errateneBuchstaben.includes(normLetter)) return;
+      errateneBuchstaben.push(normLetter);
+      tasteEl.classList.add('genutzt');
+      if(normalisiertesWort.includes(normLetter)){
+        tasteEl.classList.add('richtig');
+        aktualisiereWortAnzeige();
+        if(!wortAnzeige.textContent.includes('_')) beendeSpiel(true);
+      } else {
+        tasteEl.classList.add('falsch');
+        falscheVersuche++;
+        versucheElt.textContent = maxVersuche - falscheVersuche;
+        aktualisiereGalgen();
+        if(falscheVersuche >= maxVersuche) beendeSpiel(false);
+      }
+    }
+
+    function aktualisiereWortAnzeige(){
+      wortAnzeige.textContent = ursprungsWort
+        .split('')
+        .map(ch => errateneBuchstaben.includes(normalisiereString(ch)) ? ch : '_')
+        .join(' ');
+    }
+
+    function aktualisiereGalgen(){
+      henkerTeile.forEach((p,i)=>{
+        p.style.display = i < falscheVersuche ? 'block' : 'none';
+      });
+    }
+
+    function beendeSpiel(gewonnen){
+      spielAktiv = false;
+      document.querySelectorAll('.taste').forEach(k=>k.classList.add('genutzt'));
+      if(gewonnen){
+        nachrichtenElt.textContent = 'Du hast gewonnen!';
+        nachrichtenElt.classList.add('gewinn-nachricht');
+      } else {
+        nachrichtenElt.textContent = `Du hast verloren! Das Wort war: ${ursprungsWort}`;
+        nachrichtenElt.classList.add('verlust-nachricht');
+      }
+    }
+
+    function zuruecksetzen(){
+      nachrichtenElt.classList.remove('gewinn-nachricht','verlust-nachricht');
+      spielAktiv = false;
+      kategorien.forEach(o=>o.classList.remove('ausgewählt'));
+      waehleKategorie(document.querySelector('[data-kategorie="alle"]'));
+    }
+
+    window.addEventListener('load', ()=>{
+      waehleKategorie(document.querySelector('[data-kategorie="alle"]'));
+      zuruecksetzen();
+    });
+  </script>
+</body>
+</html>

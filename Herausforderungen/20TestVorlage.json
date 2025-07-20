@@ -1,0 +1,32 @@
+{
+  "fragen": [
+    {
+      "text": "Sokrates war der Lehrer von Platon.",
+      "antwort": true
+    },
+    {
+      "text": "Sokrates hinterließ wichtige philosophische Schriften.",
+      "antwort": false
+    },
+    {
+      "text": "Sokrates wurde wegen Korruption der Jugend und wegen Gottlosigkeit zum Tode verurteilt.",
+      "antwort": true
+    },
+    {
+      "text": "Sokrates wurde in Athen im 5. Jahrhundert v. Chr. geboren.",
+      "antwort": true
+    },
+    {
+      "text": "Sokrates glaubte, dass Weisheit darin besteht, die eigene Unwissenheit zu erkennen.",
+      "antwort": true
+    },
+    {
+      "text": "Das Orakel von Delphi erklärte, dass Sokrates der weiseste Mann in Athen sei.",
+      "antwort": true
+    },
+    {
+      "text": "Die Hauptquelle des Wissens über Sokrates stammt aus den von Aristoteles verfassten Dialogen.",
+      "antwort": false
+    }
+  ]
+}

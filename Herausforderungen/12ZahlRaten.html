@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zahl erraten</title>
+  <style>
+    :root {
+      --bg: #f0f0f0;
+      --card: #fff;
+      --primary: #4a90e2;
+      --text: #333;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1em;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75em;
+      margin: 0.5em 0;
+      border: 1px solid #ccc;
+      border-radius: 0.25rem;
+      font-size: 1rem;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.75em 1.5em;
+      font-size: 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.5em;
+    }
+    button:hover {
+      background: #357abd;
+    }
+    #ergebnis {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+    #zaehler {
+      margin-top: 0.5em;
+      color: #666;
+    }
+    .hidden {
+      display: none;
+    }
+    footer {
+      margin-top: 2em;
+      font-size: 0.8em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Autor: Thomas Hills -->
+
+<div class="card">
+
+  <h1>Zahl erraten</h1>
+
+  <div id="menuModus">
+    <p>Wähle einen Spielmodus:</p>
+    <button onclick="modusAuswaehlen('einfach')">Einfacher Modus</button>
+    <button onclick="modusAuswaehlen('schwierig')">Schwieriger Modus</button>
+  </div>
+
+  <div id="konfiguration" class="hidden">
+    <p>Wähle eine Zahl von 1 bis 100 und die maximale Versuche:</p>
+    <label for="versuche">Versuche (1–10):</label>
+    <input type="number" id="versuche" min="1" max="10" value="5"/>
+    <button id="btnStart">Spiel starten</button>
+  </div>
+
+  <div id="spielbereich" class="hidden">
+    <p>Gib deine Zahl ein:</p>
+    <input type="number" id="eingabe" min="1" max="100"/>
+    <button id="btnPruefen">Prüfen</button>
+    <div id="ergebnis"></div>
+    <div id="zaehler"></div>
+    <button id="btnNeu" class="hidden">Zurück zum Menü</button>
+  </div>
+
+  <footer>Thomas Hills</footer>
+</div>
+
+<audio id="soundRichtig" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="soundFalsch" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+
+<script>
+(() => {
+  let geheimnis, maxVersuche, versuche, vorherigeDiff, beendet, modus;
+
+  const menuModus     = document.getElementById('menuModus');
+  const konfiguration = document.getElementById('konfiguration');
+  const spielbereich  = document.getElementById('spielbereich');
+  const btnStart      = document.getElementById('btnStart');
+  const btnPruefen    = document.getElementById('btnPruefen');
+  const btnNeu        = document.getElementById('btnNeu');
+  const ergebnis      = document.getElementById('ergebnis');
+  const zaehler       = document.getElementById('zaehler');
+  const eingabe       = document.getElementById('eingabe');
+  const inputVersuche = document.getElementById('versuche');
+  const soundRichtig  = document.getElementById('soundRichtig');
+  const soundFalsch   = document.getElementById('soundFalsch');
+
+  window.modusAuswaehlen = function(typ) {
+    modus = typ;
+    menuModus.classList.add('hidden');
+    konfiguration.classList.remove('hidden');
+  }
+
+  btnStart.addEventListener('click', () => {
+    geheimnis     = Math.floor(Math.random() * 100) + 1;
+    maxVersuche   = +inputVersuche.value;
+    versuche      = 0;
+    vorherigeDiff = null;
+    beendet       = false;
+
+    ergebnis.textContent = '';
+    zaehler.textContent  = `Versuch 1 von ${maxVersuche}`;
+    eingabe.value = '';
+    spielbereich.classList.remove('hidden');
+    konfiguration.classList.add('hidden');
+
+    inputVersuche.disabled = true;
+    btnStart.disabled      = true;
+    btnPruefen.disabled    = false;
+    btnNeu.classList.add('hidden');
+  });
+
+  btnPruefen.addEventListener('click', () => {
+    if (beendet) return;
+
+    const val = parseInt(eingabe.value, 10);
+    if (!val || val < 1 || val > 100) {
+      ergebnis.textContent = 'Bitte eine gültige Zahl zwischen 1 und 100 eingeben.';
+      return;
+    }
+
+    versuche++;
+    let msg = '';
+
+    if (val === geheimnis) {
+      msg = `Richtig! Die Zahl war ${geheimnis}. Du hast in ${versuche} Versuch(en) gewonnen.`;
+      soundRichtig.play();
+      spielBeenden();
+    } else {
+      soundFalsch.play();
+
+      if (modus === 'einfach') {
+        msg = val < geheimnis ? 'Die Zahl ist höher.' : 'Die Zahl ist niedriger.';
+      } else if (modus === 'schwierig') {
+        const diff = Math.abs(val - geheimnis);
+        if (versuche === 1) {
+          msg = val < geheimnis ? 'Höher.' : 'Niedriger.';
+        } else {
+          msg = diff < vorherigeDiff
+            ? 'Du kommst näher als beim letzten Mal!'
+            : diff > vorherigeDiff
+              ? 'Du entfernst dich mehr als zuvor.'
+              : 'Gleicher Abstand wie zuvor.';
+        }
+        vorherigeDiff = diff;
+      }
+    }
+
+    ergebnis.textContent = msg;
+
+    if (!beendet && versuche >= maxVersuche) {
+      ergebnis.textContent += ` Du hast verloren. Die Zahl war ${geheimnis}.`;
+      soundFalsch.play();
+      spielBeenden();
+    }
+
+    if (!beendet) {
+      zaehler.textContent = `Versuch ${versuche + 1} von ${maxVersuche}`;
+    }
+  });
+
+  btnNeu.addEventListener('click', () => {
+    spielbereich.classList.add('hidden');
+    menuModus.classList.remove('hidden');
+    konfiguration.classList.add('hidden');
+
+    inputVersuche.disabled = false;
+    btnStart.disabled      = false;
+    ergebnis.textContent   = '';
+    zaehler.textContent    = '';
+    eingabe.value = '';
+  });
+
+  function spielBeenden() {
+    beendet = true;
+    btnPruefen.disabled = true;
+    zaehler.textContent = 'Spiel beendet.';
+    btnNeu.classList.remove('hidden');
+  }
+})();
+</script>
+
+</body>
+</html>
